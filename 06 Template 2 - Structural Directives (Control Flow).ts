@@ -6,7 +6,7 @@
 // * An element can have only one structural directive.
 
 ////////////////////////////////////////////////////////////////////////
-// The OLD syntax: /////////////////////////////////////////////////////
+// The OLD syntax //////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 
 // ######################################################################################################
@@ -46,7 +46,7 @@ export class AppComponent {
 
 // @@@ *ngIf as an object existence guard
 
-// The next <div> will be rendered only if the object named 'user' is defined and instantiated, even if it's an empty object = {}:
+// The next <div> will be rendered only if the object named 'user' is defined and instantiated, even if it's an empty object - {}:
 <div *ngIf="user; else noUser">
   <h2>User Details</h2>
   <p>Name: {{user.name}}</p>
@@ -65,14 +65,13 @@ export class AppComponent {
 // <ng-template> custom HTML tag to implement the "else" functionality
 // ######################################################################################################
 
-// It's not a structural directive, but it's widely used with structural directives, so it's described here.
-// In fact, you've just seen it in the previous example.
+// <ng-template> you've just seen isn't a structural directive, but it's widely used with structural directives, so let's get familiar with it.
 
 // The <ng-template> tag defines a piece of HTML (like <div>) but is not rendered by default.
 // It's a container for an HTML block that Angular can conditionally add or remove from the DOM at runtime using structural directives.
 
-// The <ng-template> with an else condition in *ngIf is used to define content that should be displayed when the condition in *ngIf is false.
-// It provides a way to specify alternative content without needing an additional *ngIf statement with the same but negative condition.
+// <ng-template> with an else condition in *ngIf is used to define content that should be displayed when the condition in *ngIf is false.
+// It provides a way to specify alternative content without needing an additional *ngIf statement with the same condition negative.
 
 // The pattern:
 
@@ -98,16 +97,17 @@ export class AppComponent {
 <div *ngIf="condition; then thenBlock else elseBlock"></div>
 <ng-template #thenBlock>Content to render when condition is true.</ng-template>
 <ng-template #elseBlock>Content to render when condition is false.</ng-template>
-// This template keeps different code fragments, having a same level of "logical nesting", at the same level of indentation.
+// This template keeps different code fragments, which have a same level of "logical nesting", at the same level of indentation.
 
 // ######################################################################################################
 // <ng-container> to be used instead of <div>
 // ######################################################################################################
 
-// It's not a structural directive either, but it's widely used with structural directives, so it's described here too.
+// <ng-container> is not a structural directive either, but it's widely used with structural directives, so let's learn it now.
 
-// <ng-container> groups several elements together like <div> but without adding an extra node to the DOM.
-// Allows to apply structural directives to multiple elements or a fragment of a template without rendering unnecessary <div> wrapper elements.
+// <ng-container> groups several elements together like <div> does.
+// However, the <div> tag itself is rendered, while <ng-container> is not (only what is between <ng-container> and </ng-container>).
+// That allows to apply structural directives to multiple elements or a fragment of a template without rendering unnecessary <div> wrapper elements.
 
 // Why <ng-container> is often better than <div>:
 // - It doesn't add an extra element to the DOM when the condition is true, keeping your HTML cleaner.
@@ -180,7 +180,7 @@ export class BeatlesComponent {
 
 // @@@ trackBy
 
-// Often, the looping is on an array of objects which have a unique identifier field.
+// Often, we loop over an array of objects which have a unique identifier field.
 // That usually happens when the array is populated from a DB table, and the PK field is included in the data type.
 // In that case, use trackBy to specify the function which returns the PK value for each item in the loop.
 // When the change detection mechanism finds that the array has been changed, Angular re-renders the HTML element (<ul> in our example).
@@ -212,16 +212,11 @@ export class UserListComponent {
   }
 }
 
-// Angular’s *ngFor directive expects a trackBy function (like getCurrUserId in our example) to match the following signature:
+// Angular’s *ngFor directive expects a trackBy function (like getCurrUserId in the example) to match the following signature:
 (index: number, item: T) => any
-// The function receives two parameters:
+// The function receives two parameters, automatically supplied by Angular on each iteration:
 //   index: The current item's index in the iteration
 //   item: The current item from the array being iterated
-
-// That signature comes from Angular's TrackByFunction<T> interface, which is defined in Angular's core libraries. The full type definition looks like:
-export interface TrackByFunction<T> {
-  (index: number, item: T): any;
-}
 
 // @@@ <ng-container> with *ngFor
 // You can use *ngFor with <ng-container> instead of <div>:
@@ -270,7 +265,7 @@ export interface TrackByFunction<T> {
 //    and in the case of ngSwitch, only the case and default parts are structural.
 
 ////////////////////////////////////////////////////////////////////////
-// The NEW syntax: /////////////////////////////////////////////////////
+// The NEW syntax //////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 
 // The new control flow syntax (@if/@else, @for/@empty, @switch/@case/@default) was introduced in Angular 17, which was released on November 8, 2023.
@@ -280,22 +275,22 @@ export interface TrackByFunction<T> {
 // @if
 // ######################################################################################################
 
-@if (condition) {
-  <p>Condition is true</p>
-} @else if (anotherCondition) {
-  <p>Another condition is true</p>
+@if (condition1) {
+  <p>Condition 1 is true</p>
+} @else if (condition2) {
+  <p>Condition 2 is true</p>
 } @else {
   <p>All conditions are false</p>
 }
 
 // Replaces the old syntax:
 
-<p *ngIf="condition">Condition is true</p>
-<p *ngIf="!condition && anotherCondition">Another condition is true</p>
-<p *ngIf="!condition && !anotherCondition">All conditions are false</p>
+<p *ngIf="condition1">Condition is true</p>
+<p *ngIf="!condition1 && condition2">Another condition is true</p>
+<p *ngIf="!condition1 && !condition2">All conditions are false</p>
 
 // Key differences:
-// - @if allows for more readable, block-style conditionals
+// - Using { }, like in many programming languages, allows for more readable, block-style conditionals
 // - Easier to handle multiple conditions with @else if
 // - No need for <ng-template> for else conditions
 
@@ -319,17 +314,16 @@ export interface TrackByFunction<T> {
 <p *ngIf="items.length === 0">No items found</p>
 
 // Key differences:
-// - Built-in empty state handling with @empty
 // - Simpler syntax for trackBy functionality
-// - No need for separate *ngIf for empty state
+// - Built-in empty state handling with @empty - no need for separate *ngIf for empty state
 
 // @@@ $index
 
-// You can access the current loop index using the $index variable:
+// You can access the current loop index using the $index variable (using an alias var like in the old syntax):
 <div @for="let item of items; let i = $index">
   <p>Index: {{ i }} - Item: {{ item.name }}</p>
 </div>
-// Notice that the variable has the dollar sign - in contrast to the old syntax.
+// Notice that the $index variable has the dollar sign - in contrast to the old syntax.
 
 // @@@ track
 // A simplified way to specify a unique identifier for each item in the loop.
@@ -339,29 +333,13 @@ export interface TrackByFunction<T> {
 // If you forget it, you will get the "NG5002: @for loop must have a "track" expression" error.
 
 // What if there is nothing unique about the looped elements?
-// In the case of an array of strings or objects, you can use the looping var itself since references are guaranteed to be unique:
+// Simply use $index as a "unique field":
 <ul>
-	@for (course of courses; track course) {
-		<li>{{ course }}</li>
-	}
+  @for (let num of nums; track $index) {
+    <li>Number: {{ num }}</li>
+  }
 </ul>
-
-// You can also use $index as a unique field with an array of any type.
-// That is the only possible option for primitive non-reference types:
-@Component({
-  selector: 'app-number-list',
-  template: `
-    <ul>
-      @for (let num of nums; track $index) {
-        <li>Number: {{ num }}</li>
-      }
-    </ul>
-  `
-})
-export class NumberListComponent {
-  nums = [1, 1, 2, 2, 3, 3];
-}
-// You cannot write "track num" since the values are not guaranteed to be unique.
+// Notice that you cannot write "track num" since the values are not guaranteed to be unique.
 
 // ######################################################################################################
 // @switch
@@ -387,10 +365,6 @@ export class NumberListComponent {
   <p *ngSwitchDefault>Value is neither 1 nor 2</p>
 </div>
 
-// Key differences:
-// - More concise and readable block-style syntax
-// - No need for a container element
-// - Closer to traditional switch-case syntax in programming languages
 
 // General advantages of the new syntax:
 // 1. More intuitive and closer to standard programming constructs

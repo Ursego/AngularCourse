@@ -56,7 +56,7 @@ const routes: Routes = [
   { path: 'contact', component: ContactComponent },
   
   // Empty path means that the base URL is entered. Obviously, we want to redirect to the home page in this situation.
-  // 'full' ensures that the redirection happens only when the full path (<the base URL>/<path>), not only the URL's beginning, is an exact match:
+  // 'full' ensures that the redirection happens only when the full path (like mysite.com), not only the URL's beginning, is an exact match:
   { path: '', redirectTo: '/home', pathMatch: 'full' },
   
   // '**' is a wildcard route that catches any URL that doesn’t match previously defined routes, typically used for displaying a 404 error page
@@ -91,11 +91,13 @@ export class AppRoutingModule { }
 //    using <nav> is considered a best practice for creating semantic, accessible HTML structure.
 
 // ######################################################################################################
-// The routerLink directive
+// The [routerLink] directive
 // ######################################################################################################
 
 // Creates links to different routes or views within your Angular app without causing a full page reload.
-// Is typically used as an attribute on HTML elements, such as <a> and <button>, to create navigation links.
+// Is typically used as an attribute on HTML elements, such as <a> and <button>, to create navigation links:
+
+<a [routerLink]="...">...</a>
 
 // When applied to an element in a template, makes that element a link that initiates navigation to a route.
 // Navigation opens one or more routed components in one or more <router-outlet> locations on the page.
@@ -245,11 +247,11 @@ if (params['id']) {
   // Use id
 }
 
-// Angular also provides a ParamMap interface, which is similar to Params but with additional methods like get(), getAll(), and has().
+// Angular also provides a ParamMap interface, which is similar to Params but has additional methods like get(), getAll(), and has().
 // You can access it via this.route.paramMap.
 
 // It's important to note that you should unsubscribe from this Observable when the component is destroyed to prevent memory leaks,
-// typically in the ngOnDestroy lifecycle hook.
+// typically in the ngOnDestroy lifecycle hook (you will learn that topic later).
 
 // ######################################################################################################
 // Child Routes:
@@ -286,7 +288,7 @@ export class ElectronicsComponent { }
   template: `
     <h2>Books</h2>
     <ul>
-      <li>Harry Potter and TypeScript Angular</li>
+      <li>Harry Potter and Angular TypeScript</li>
       <li>The Catcher in the Rye</li>
       <li>1984</li>
     </ul>
@@ -296,7 +298,7 @@ export class BooksComponent { }
 
 // ProductsComponent:
 
-// Serves as a container for the child routes.
+// Serves as a container (parent component) for the child routes.
 // It includes navigation links to the child routes and a <router-outlet> where the child components
 // (ElectronicsComponent or BooksComponent) will be rendered.
 
@@ -370,7 +372,7 @@ export class AppModule { }
 // Navigating programmatically
 // ######################################################################################################
 
-// You can navigate in your code (rather than through user interaction with links) using the navigate() method of the Router class:
+// You can navigate in code (rather than through user interaction with links) using the navigate() method of the Router class:
 
 import { Router } from '@angular/router';
 
@@ -495,7 +497,7 @@ const routes: Routes = [
 
 // loadChildren is a property used to enable lazy loading of feature modules.
 // It allows you to load a module and its associated routes only when a specific route is activated.
-// Since Angular version 8, the recommended way to configure loadChildren is by using the dynamic import() syntax.
+// Since Angular 8, the recommended way to configure loadChildren is by using the dynamic import() syntax.
 // This method creates a separate JavaScript bundle for the lazy-loaded module, which is fetched only when the route is accessed.
 
 // The feature routing module (`products-routing.module.ts`):

@@ -2,29 +2,28 @@
 // Angular Template Reference Variables: A Comprehensive Guide
 // ######################################################################################################
 
-//## 1. Introduction
+// ### Introduction
 
 // Template Reference Variables are a powerful feature that allows you to directly reference elements, components, or directives in your template.
 // They provide a way to interact with and manipulate these elements from within the template or component class.
 
-//## 2. Basic Syntax
+// ### Basic Syntax
 
 // To create a template reference variable, use the hash (#) symbol followed by a name:
 
 <element #variableName></element>
 
-//## 3. Usage
+// ### Usage
 
-// 3.1 Referencing in the Template
+// Referencing in the Template
 
 // You can use the variable anywhere in the template after it's declared:
-
 <input #nameInput type="text">
 <button (click)="greet(nameInput.value)">Greet</button>
 
-// 3.2 Referencing in the Component Class
+// Referencing in the Component Class
 
-// To access the variable in TypeScript, use the @ViewChild decorator, and pass the name of the variable (without the #) to it as an argument:
+// To access an HTML element in TypeScript, use the @ViewChild decorator (you will learn it in detail soon), passing the variable name (with no #) as an argument:
 
 import { Component, ViewChild, ElementRef } from '@angular/core';
 
@@ -37,86 +36,64 @@ export class MyComponent {
   }
 }
 
-//## 4. Types of References
+// ### Types of References
 
-// 4.1 DOM Elements
+// DOM Elements
 
 // When used on a standard HTML element, the variable refers to the DOM element:
-
 <div #greetingDiv>Hello</div>
 
-// 4.2 Components
+// Components
 
 // When used on a component, the variable refers to the component instance:
-
 <app-child #childComp></app-child>
 
-// 4.3 Directives
+//  Directives
 
 // When used with directives, you can access the directive instance:
-
 <div #myTooltip="matTooltip" matTooltip="Hello">Hover me</div>
 
-// 4.4 TemplateRef
+// TemplateRef
 
 // When used on an `<ng-template>`, it creates a reference to a TemplateRef:
-
 <ng-template #myTemplate>
   <p>Template content</p>
 </ng-template>
 
-//## 5. Advanced Usage
+// ### Advanced Usage
 
-// 5.1 With *ngFor
+// With *ngFor
 
 // You can use template variables within *ngFor loops:
-
 <div *ngFor="let item of items; let i = index; #itemElement">
   {{i}}: {{item}}
 </div>
 
-// 5.2 As Inputs to Components
+// Inputs to Components
 
 // You can pass template variables as inputs to other components:
-
 <input #nameInput type="text">
 <app-greeting [name]="nameInput.value"></app-greeting>
 
-// 5.3 With ViewChildren
+// ### Limitations
 
-// To get multiple elements, use @ViewChildren:
+// * You cannot use a variable before it's declared in the template.
+// * Template variables are only available within its template.
+//      They are not accessible in parent components unless explicitly passed through an input property or a @ViewChild decorator.
 
-@ViewChildren('itemElement') itemElements!: QueryList<ElementRef>;
-
-//## 6. Best Practices
-
-// 1. Avoid overusing template variables for complex logic; move it to the component class when appropriate.
-// 2. Be cautious when using variables before they're defined in the template.
-// 3. Remember that variables are only available after Angular has initialized the view, so you cannot use them in the constructor and ngOnInit.
-
-//## 7. Limitations
-
-// 1. A template variable is only available within its template.
-// 2. You cannot use a variable before it's declared in the template.
-// 3. Variables are not accessible in parent components unless explicitly passed through an input property or a @ViewChild decorator.
-
-//## 8. Conclusion
-
-// Template Reference Variables are a powerful feature in Angular that can greatly simplify template manipulation and interaction.
-// They provide a direct way to access and control elements, components, and directives within your templates,
-// 		enhancing the overall flexibility and functionality of your Angular applications.
+// ATTENTION! Avoid overusing template variables for complex logic; move it to the component class when appropriate.
 
 // ######################################################################################################
 // Pipes (for Templates)
 // ######################################################################################################
 
-// REMARK: Not to be confused with the pipe() function of RxJS Observables that combines and chains multiple RxJS operators together!
+// REMARK: Not to be confused with the pipe() function of RxJS Observables that combines and chains multiple RxJS operators together, which you will learn later!
 
 // Angular Pipes are used in templates to modify how data is displayed (for example, formatting dates, numbers, or applying custom filters).
 // Pipes take in data as input and transform it to a desired output format.
 // They are used to display formatted data in the view without having to write complex logic in the component itself.
 
-// You apply pipes directly in the template using the | operator:
+// You apply pipes directly in the template using | (the pipe operator):
 {{ expression | pipeName }}
 
 // You can also pass arguments to a pipe by separating them with colons:
@@ -144,19 +121,19 @@ export class PipeExampleComponent {
 
 // Explanation:
 
-// 1. Uppercase Pipe (uppercase): Converts a string to uppercase.
+// Uppercase Pipe (uppercase): Converts a string to uppercase.
 {{ title | uppercase }}
 // transforms 'Angular Pipes Example' to 'ANGULAR PIPES EXAMPLE'.
 
-// 2. Lowercase Pipe (lowercase): Converts a string to lowercase.
+// Lowercase Pipe (lowercase): Converts a string to lowercase.
 {{ title | lowercase }}
 // transforms 'Angular Pipes Example' to 'angular pipes example'.
 
-// 3. Date Pipe (date): Formats a date according to the specified format.
+// Date Pipe (date): Formats a date according to the specified format.
 {{ today | date:'fullDate' }}
 // formats the today variable to a full date string, such as 'Monday, January 1, 2024'.
 
-// 4. Currency Pipe (currency): Formats a number as currency.
+// Currency Pipe (currency): Formats a number as currency.
 {{ price | currency:'USD':true }}
 // formats 199.99 as $199.99, with the currency symbol (USD for US dollars).
 
@@ -166,8 +143,9 @@ export class PipeExampleComponent {
 // Pipe is a class which:
 //    1. Has the @Pipe decorator.
 //    2. Implements the PipeTransform interface which has only one method - transform(). The method takes an original value and returns the transformed value.
-// The naming convention is <Description>Pipe. Ours will be ReversePipe.
+
 // Suppose you want to create a custom pipe that reverses a string.
+// The naming convention is <Description>Pipe, so ours will be ReversePipe.
 
 // 1. Generate a new pipe using Angular CLI:
 ng generate pipe reverse
@@ -176,9 +154,7 @@ ng generate pipe reverse
 
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({
-	name: 'reversePipe'
-})
+@Pipe({ name: 'reversePipe' })
 export class ReversePipe implements PipeTransform {
 	transform(value: string): string {
 		return value.split('').reverse().join('');
@@ -208,7 +184,7 @@ export interface PipeTransform {
     transform(value: any, ...args: any[]): any;
 }
 
-// Its first parameter is the value to transform (which is on the lefthand side of the pipe symbol, like title in the example above).
+// Its first parameter is the value to transform (which is on the lefthand side of the pipe symbol).
 // The second parameter is an array of values that the template can provide as parameters.
 
 // Here’s a simple example of a custom pipe that accepts a parameter.
@@ -216,9 +192,7 @@ export interface PipeTransform {
 
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({
-  name: 'repeatPipe'
-})
+@Pipe({ name: 'repeatPipe' })
 export class RepeatPipe implements PipeTransform {
   transform(value: string, times: number): string {
     return value.repeat(times);
