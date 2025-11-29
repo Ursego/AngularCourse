@@ -1,6 +1,6 @@
 // https://v2.angular.io/docs/ts/latest/guide/ngmodule.html
 
-// An Angular Module is a class marked by the decorator @NgModule which describes how the application parts fit together.
+// An Angular Module is a class marked by the @NgModule decorator which describes how the application parts fit together.
 
 // A module consolidates components, directives, and pipes into a cohesive blocks of functionality
 // 		focused on a feature area, specific application domain, workflow, a closely related set of capabilities or common collection of utilities.
@@ -56,8 +56,8 @@ import { MyComponent } from './my.component';
   ],
   imports: [
     // An array of other Angular modules which are available in the HTML templates of the current module.
-    // All exportable declarations from the imported modules (components, directives, pipes) become available in HTML.
-    // ATTENTION! The "imports" array has no effect on what you can use in your component classes' TypeScript code.
+    // All exported declarations from the imported modules (components, directives, pipes) become available in HTML.
+    // ATTENTION! The "imports" array is only about HTML templates - it has no effect on what you can use in your component classes' TypeScript code.
     // You still need explicit TypeScript import statements.
     CommonModule, // includes common directives like *ngIf, *ngFor
     FormsModule  // is required if you're using template-driven forms
@@ -78,7 +78,7 @@ export class MyModule {}
 // THE ROOT MODULE: AppModule
 // ######################################################################################################
 
-// Every Angular application has at least one module class, the root module which tells Angular how to construct the application.
+// Every Angular application has at least one root module class which tells Angular how to construct the application.
 // You bootstrap that module to launch the application.
 // The conventional name is AppModule.
 // In contrast to feature modules, the root module has the bootstrap property - it identifies the bootstrap component.

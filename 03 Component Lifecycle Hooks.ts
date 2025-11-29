@@ -9,7 +9,7 @@
 // * ngOnChanges
 // * ngOnDestroy
 
-// Lifecycle hooks are specific functions that allow you to tap into specific moments in the life of a component object.
+// Lifecycle hooks are specific functions automatically called by Angular that allow you to tap into specific moments in the life of a component object.
 // To implement a lifecycle hook, import the corresponding interface from `@angular/core` and have the component class implement it.
 
 // If you just started learning Angular, you don't need to bone up this whole file. For now, get familiar with only three hooks which are most frequently used:
@@ -61,6 +61,8 @@ export class UserService {
     ]);
   }
 }
+// The of() function of RxJS creates an observable - you will learn it later.
+// For now, simply think about it as a variable, the value of which automatically changes when the variable it observes changes.
 
 // Finally, create the component:
 
@@ -110,7 +112,11 @@ export class UserListComponent implements OnInit { // <<<<<<<<<<<<<<<<<<<<<<<< n
 // * ngDoCheck
 // ######################################################################################################
 
-// Called during every change detection cycle.
+// Angular’s change detection is a mechanism which runs every time an application event occurs (user input, HTTP response, timer, etc.).
+// During this cycle, Angular walks the component tree from top to bottom and compares current data-bound values with their previous values.
+// If a value has changed, Angular updates the DOM accordingly.
+
+// The ngDoCheck hook is called during every change detection cycle.
 // Useful when you need to detect changes that Angular's built-in change detection mechanism might miss,
 //    especially in properties which are mutable objects or array that are not caught by the default change detection
 //    which does not detect changes WITHIN objects and arrays (unless the reference to the entire object or array has changed).
@@ -426,10 +432,9 @@ export class AppComponent {}
 // Particularly important for any operations that require manipulating DOM elements, or interact with child components that are fully rendered.
 // Typical Uses:
 //	* Accessing Child Components:
-//		This hook is ideal for querying and interacting with view children (ViewChild) and the children's components (ViewChildren)
-//			because they are guaranteed to be rendered and initialized at this point.
+//		This hook is ideal for querying and interacting with child components because they are guaranteed to be rendered and initialized at this point.
 //	* DOM Manipulations:
-//		Any DOM interactions (like setting focus, measuring elements, or applying direct DOM manipulations) should ideally be done in this hook
+//		Any DOM interactions (like initial focus setting, measuring elements, or applying direct DOM manipulations) should ideally be done in this hook
 //			to ensure all elements are present and fully rendered.
 //	* Integration with UI Libraries:
 //		When using external UI libraries that need to interact with the DOM (like jQuery plugins or D3 visualizations), ngAfterViewInit provides

@@ -1,5 +1,5 @@
 // Angular applications are made up of components.
-// A component is a piece of the UI (user interface) that has its own logic and appearance.
+// A component is a piece of the UI that has its own logic and appearance.
 // Technically, it's the combination of an HTML template and a TypeScript class that controls a portion of the screen.
 
 // Components are responsible for rendering the UI by combining the template and data.
@@ -8,7 +8,7 @@
 // Components handle user interactions and respond to events such as button clicks, form submissions, and more.
 // They can define event handlers in the component's class to execute specific actions or trigger changes in the application.
 
-// Components have lifecycle hooks, which are pre-defined methods that are called at specific stages of a component's lifecycle,
+// Components have lifecycle hooks, which are pre-defined methods that are called by Angular at specific stages of a component's lifecycle,
 //    such as initialization, changes detection, and destruction. The next file of our course will explain this topic in detail.
 
 // Components can communicate with other components using input and output properties.
@@ -63,7 +63,7 @@ export class ExampleComponent {
 <!-- app.component.html -->
 <app-hello-world></app-hello-world>
 
-// When Angular renders the other template, it will replace the app-hello-world tag with the whole content of theHTML template of HelloWorldComponent.
+// When Angular renders the other template, it will replace the app-hello-world tag with the whole content of the HTML template of HelloWorldComponent.
 
 // IMPORTANT! The selector specifies the custom HTML tag which becomes available across the whole application.
 // That means that the selector for each component should be unique.
@@ -82,15 +82,15 @@ export class ExampleComponent {
 // styleUrls
 // ######################################################################################################
 
-// By "styles" we mean CSS classes which override the existing default CSS classes for this specific component only.
-// If a CSS class is not in the .css file, its default definition is used.
+// "Styles" here are CSS classes used in the template. They can be:
+//    brand new CSS classes created specifically for the template of this component, or
+//    exisitng CSS classes, which override their default global definition for this specific component only.
 
 // Example for ExampleComponent:
 <!-- example.component.css -->
 h1 {
   color: blue;
 }
-// The CSS class can also define brand new CSS classes specific to the template of this component.
 
 // ######################################################################################################
 // Inline Template & Styles
@@ -98,7 +98,7 @@ h1 {
 
 // Usually, the template and styles are stored in separate .html and .css files, as described above.
 // But, instead of the "templateUrl" and "styleUrls" properties, you can use the "template" and "styles" properties
-//      and write HTML and CSS code directly within them:
+//      and write HTML and CSS directly within them:
 
 @Component({
   selector: 'app-example',
@@ -109,7 +109,8 @@ export class ExampleComponent {
   title = 'Hello, Angular!';
 }
 
-// This practice is not commonly used. You'd better create separate files even if they contain just one line - that is expected by developers.
+// This practice is not recommended or commonly used.
+// You'd better create separate files even if they contain just one line - that is expected by other developers, and your component class files will be less loaded.
 
 // ######################################################################################################
 // Standalone components
@@ -171,7 +172,7 @@ export class ProfilePhoto {
 // The shift to standalone components provides more flexibility and simplifies the development process.
 // The Angular team recommends using standalone components for all new development.
 
-// For more information, you can refer to the Angular documentation: https://angular.io/guide/standalone-components
+// For more information, you can refer to documentation: https://angular.io/guide/standalone-components
 
 // ######################################################################################################
 // Dependency Injection (DI)
