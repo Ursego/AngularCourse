@@ -21,15 +21,15 @@ import { Component, ViewChild, ElementRef } from '@angular/core';
 })
 export class AppComponent {
   // A reference to the <h1> element (notice that the name of the #header var is sent with no pound sign):
-  @ViewChild('header') header: ElementRef; 
+  @ViewChild('header') hdr: ElementRef; 
 
   changeTitle() {
-    this.header.nativeElement.textContent = 'New Title';
+    this.hdr.nativeElement.textContent = 'New Title';
   }
 }
 
 // @ViewChild returns the first encountered element with the given template reference variable.
-// In this example, @ViewChild  is used to get a reference to the <h1> element with the template var #header.
+// In this example, @ViewChild is used to get a reference to the <h1> element with the template var #header.
 // The changeTitle() method then modifies the text content of this element.
 
 //### @ViewChildren
@@ -52,8 +52,8 @@ export class AppComponent {
   @ViewChildren('item') items: QueryList<ElementRef>;
 
   changeItems() {
-    this.items.forEach(item => {
-      item.nativeElement.style.color = 'red';
+    this.items.forEach(itm => {
+      itm.nativeElement.style.color = 'red';
     });
   }
 }
@@ -78,13 +78,7 @@ export class AppComponent {
 // * The actual component or directive type (when querying a component or directive directly)
 
 // @ViewChildren:
-// Always returns a QueryList, but the type parameter of QueryList depends on what you're querying. Common return types include:
-// * QueryList<ElementRef> (when querying DOM elements)
-// * QueryList<ComponentRef> (when querying components)
-// * QueryList<DirectiveRef> (when querying directives)
-// * QueryList<TemplateRef> (when querying templates)
-// * QueryList<ActualComponentType> (when querying components directly)
-// * QueryList<ActualDirectiveType> (when querying directives directly)
+// Returns a QueryList<T> where T is one one of the types listed for @ViewChild - depending on what you're querying.
 
 import { Component, ViewChild, ViewChildren, ElementRef, TemplateRef, ComponentRef, ViewContainerRef, AfterViewInit, QueryList, Directive } from '@angular/core';
 

@@ -3,7 +3,7 @@
 // ######################################################################################################
 
 // Content projection is a powerful feature that allows you to insert dynamic content into a component.
-// Allows child components to receive and display content from their parent components.
+// Allows a child component to receive and display content from its parent component.
 // This is achieved using the `<ng-content>` directive, which acts as a placeholder for content that is passed from a parent.
 
 // Step-by-Step Example:
@@ -27,7 +27,7 @@
 export class ParentComponent {}
 
 // 2. Create the Child Component
-// The Child component will use the <ng-content> tag to specify where the projected content should be inserted.
+// It will use the <ng-content> tag to specify where the projected content should be inserted.
 // <ng-content> acts as a placeholder and, on rendering, will be replaced with the content passed from the Parent component.
 
 @Component({

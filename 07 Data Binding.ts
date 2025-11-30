@@ -31,7 +31,9 @@
 // ######################################################################################################
 
 // You can embed expressions (dynamic text) into HTML templates with double curly braces.
-// They tell Angular that the text inside is an expression to evaluate rather than a text to render as is. The next HTML
+// They tell Angular that the text between them is an expression to evaluate rather than a hardcoded text to render as is.
+// The value, returned by the expression, will be rendered in place of the braces and the expression.
+// For example, the next HTML
 2 + 2 = {{ 2 + 2 }}
 // is rendered as "2 + 2 = 4".
 
@@ -68,8 +70,8 @@ export class ExampleComponent {
   <p>4. Expression: {{ firstName + ' ' + lastName + ' (' + firstName.charAt(0) + lastName.charAt(0) + ')' }}</p>
 </div>
 
-// The fourth line demonstrates a more complex expression within the interpolation brackets. It will output: John Doe (JD).
-// The expression within double curly braces can be any valid TypeScript expression that returns a value that can be converted to string.
+// The fourth line demonstrates a more complex expression within double curly braces. It will output: John Doe (JD).
+// The expression can be any valid TypeScript expression that returns a value that can be converted to string.
 // This includes a wide range of possibilities. Here are some examples to illustrate the breadth of what's possible:
 
 // Simple arithmetic:
@@ -98,7 +100,7 @@ export class ExampleComponent {
 
 // While these expressions can be quite complex, they should ideally be kept simple for readability and maintainability.
 // If an expression grows too much, it's often better to compute the result in the component's TypeScript code and
-//		then use a simple property or method call in the template.
+//		then obtain it in the template with interpolation using a simple property or method call.
 // Or you can use data cache after the initial calculation or retrieval of the value.
 
 // These expressions are evaluated in the context of the component, so they have access to the component's properties and methods,
@@ -145,13 +147,12 @@ export class ExampleComponent {
 
 // Sets an HTML element's property value based on a component variable or a method. The syntax:
 [html_property]="component_variable_or_method"
+// The square brackets around an HTML property tell Angular that the string value is an expression to evaluate rather than a hardcoded text to render as is.
+// The value, returned by the expression, will be rendered in place of the expression.
 
-// HTML template (example.component.html):
+// Example (example.component.html):
 <img [src]="image1Url" />
 <img [src]="getImage2Url()" />
-
-// The square brackets around an HTML property indicate that this is a property binding,
-//		so the string inside the quotes is treated not as a hardcoded value but as an expression which returns the value to be used.
 
 // During the rendering process, Angular will:
 //		* remove the square brackets from the property name ("[src]" -> "src");
@@ -222,11 +223,11 @@ export class ExampleComponent {
   getStyles(): { [key: string]: string } {
 // The type it returns
 { [key: string]: string }
-// defines a key-value object where both the keys and the values are strings.
+// defines a key-value object with an arbitry number of pairs where both the keys and the values are strings.
 
 // We could declare the function to return any:
   getStyles(): any {
-// But this would be less specific and provides less type safety.
+// But this would be less specific and less type-safe.
 
 // ------------------------------------------------------------------------------------------------------
 
@@ -277,24 +278,24 @@ export class ExampleComponent {
 
 // That is rendered as
 <button>SAVE DATA</button>
-// Ooops... Where is my saveData()? Any mention of event binding has gone!
+// Ooops... Where is the saveData() method? It looks like event binding has gone!
 // But how does Angular know which method of the component should be called when the button is clicked?
-// When you write templates with event binding, Angular sets up event listeners for these events during the compilation and rendering phases.
+// No worries! When you write templates with event binding, Angular sets up event listeners for these events during the compilation and rendering phases.
 // So, the component is constantly listening to the button's click event.
 // When the user clicks the button, the event is propagated to that listener.
-// This listener then calls the saveData() method on the component instance.
+// This listener then calls saveData() on the component instance.
 
-// The purpose of Event Binding methods is only changing the component state.
-// So, they must return void (technically, they can return any type, but the returned value will be ignored, and that will confuse).
+// The purpose of Event Binding method is only changing the component state.
+// So, they must return void (technically, they can return any type, but the returned value will be ignored, and that return value will confuse).
 
 // In contrast to Property Binding, Event Binding methods can accept parameters.
 // They often use the special $event object to get information about the event that triggered the method:
 
 export class ExampleComponent {
   onClick(event: MouseEvent): void {
-    const clickedElement = event.target as HTMLElement;
-    const id = clickedElement.id;
-    const text = clickedElement.innerText;
+    const clickedEl = event.target as HTMLElement;
+    const id = clickedEl.id;
+    const text = clickedEl.innerText;
     console.log('Button clicked!', { id, text });
   }
 }
@@ -312,7 +313,7 @@ export class ExampleComponent {
 export class cstNameComponent {
   cstName: string = '';
 
-  onKeyUp(newCstName: string): void {
+  onKeyUp(newCstName: string): void { // <<<<<<<<<<<<<<<<<<<<<<<<< the event's argument is just a string
     this.cstName = newCstName;
   }
 }
@@ -326,7 +327,7 @@ export class cstNameComponent {
   placeholder="Enter user name">
 
 // We use event binding (keyup)="onKeyUp($event.target.value)" to call the onKeyUp method whenever a key is released in the input field.
-// $event.target.value gives us the current value of the input field, which we pass to the onKeyUp method.
+// $event.target.value returns the current value of the input field, which we pass to the onKeyUp method.
 
 // This setup creates a two-way binding between the input field and the cstName property.
 // As the user types in the input field, the onKeyUp method is called, updating the cstName property,
@@ -337,7 +338,7 @@ export class cstNameComponent {
 // That can be useful in certain scenarios or when you need more control over the binding process.
 
 // It's also possible to use a template reference variable (a "pound variable") instead of $event.target.
-// This approach is often clearer and more Angular-idiomatic since you can give the pound variable a meaningful, business-related name.
+// This approach is often clearer and more Angular-idiomatic since you can give the pound variable a name more meaningful than "$event.target".
 // Here's how you would modify the <input> element in the template:
 
 <input
@@ -350,33 +351,22 @@ export class cstNameComponent {
 // The #enteredCstName declaration creates a reference to the input element, and then that reference is used in the (keyup) event binding.
 // "enteredCstName.value" is much more self-documenting than "$event.target.value".
 
-// ### Binding an event to a field
-
-// Events are typically bound to methods, but you can also bind them to fields, for example:
-<input [value]="lastName" (blur)="lastName = $event.target.value">
-// When the user tabs out or clicks elsewhere (i.e., when the input loses focus), the blur event fires.
-// At that point, the component's lastName property is updated with the final value.
-
-// But you're unlikely to use this pattern, since there's a much more convenient Two-way data binding, which is described next.
-
 // ######################################################################################################
 // * [(ngModel)] - Two-way data binding (class ---> HTML ---> class)
 // ######################################################################################################
 
+// A combination of Property Binding and Event Binding.
 // Allows changes in the GUI to update the component's data, and vice versa, automatically and simultaneously.
 // It's a powerful tool for creating interactive forms, providing an easy way to keep your component's data in sync with your template's form controls.
 
-// Uses the [(ngModel)].
-// The square brackets denote the "class ---> HTML" part of the binding.
-// The round brackets denote the "HTML ---> class" part of the binding (like in event binding).
-
-// In fact, the "class ---> HTML" part is Interpolation.
-// Since this is a value drawing on the screen rather than a property binding, it's strange that the creators of Angular used square and not curly brackets.
-// {{(ngModel)}} or ({{ngModel}}) would reflect the essence of the two-way binding much more correctly, but we have what we have, so just remember.
-
-// In a typical scenario, the value of the bound property is initially displayed in the HTML.
+// In a typical scenario, the initial value of the bound property of the component class is displayed when the HTML is first rendered.
 // If the user changes it in the browser, the bound property is automatically updated with the new value.
 // Obviously, any changes of the bound property made by other parts of the program are reflected in the HTML right away.
+
+// Syntax:
+[(ngModel)]="the_bound_property"
+// The square brackets denote the Property Binding part ("class ---> HTML").
+// The round brackets denote the Event Binding part ("HTML ---> class").
 
 // To use [(ngModel)], you need to import the FormsModule in your application root module (app.module.ts):
 import { NgModule } from '@angular/core';
@@ -406,7 +396,7 @@ export class AppModule { }
   templateUrl: './example.component.html'
 })
 export class ExampleComponent {
-  email: string = 'fake@gmail.com';
+  userEmail: string = 'fake@gmail.com';
 }
 
 // HTML Template (example.component.html):
@@ -414,9 +404,9 @@ export class ExampleComponent {
 <form>
   <div>
     <label for="email">Email:</label>
-    <input id="email" name="email" type="email" [(ngModel)]="email">
+    <input id="email" name="email" type="email" [(ngModel)]="userEmail">
   </div>
-  <p>Your email is: {{ email }}</p>
+  <p>Your email is: {{ userEmail }}</p>
 </form>
 
 // Rendered HTML:
@@ -428,31 +418,35 @@ export class ExampleComponent {
   <p>Your email is: fake@gmail.com</p>
 </form>
 
-// [(ngModel)]="email" binds the input field to the email property of the component.
+// [(ngModel)]="userEmail" binds the input field to the userEmail property of the component class.
+
+// You can see that [(ngModel)]="userEmail" is rendered as ng-reflect-model="".
+// ng-reflect-model="" is just a stub attribute and does not reflect the real value.
+// As with Event Binding, Angular creates listeners - [(ngModel)] actually wires up two-way binding under the hood.
 
 // Notice that the bound variables can be used elsewhere in the template using Interpolation.
-// For example, {{ email }} displays the current value of the email property.
+// For example, {{ userEmail }} displays the current value of the email property.
 
-// When the form is rendered, the email input control is populated with the value of the email field in the component object (similar to Interpolation).
-// And when the user types into the input field, that immediately changes the email field in the component object.
-// And that, respectively, is immediately reflected in the {{ email }} piece of HTML (which uses Interpolation).
+// When the form is rendered, the email input control is populated with the value of the userEmail field in the component object.
+// And when the user types into the input field, that immediately changes the userEmail field in the component object.
+// And that, respectively, is immediately reflected in the {{ userEmail }} piece of HTML (which uses Interpolation).
 
 // The id, name and type attributes are part of standard HTML and are not related to [(ngModel)].
 
-// @@@ Two-ay binding with a getter / a setter:
+// @@@ Two-way binding with a getter / a setter:
 
-// [(ngModel)] can bind not only with an instance variable but also with a getter / a setter:
+// [(ngModel)] can bind not only with instance variables but also with getters / setters:
 @Component({
   selector: 'app-example',
   templateUrl: './example.component.html'
 })
 export class ExampleComponent {
-  private _age: number = 0;
-  get age(): number { return this._age; }
-  set age(value: number) { this._age = value < 0 ? 0 : value; }
+  private _userAge: number = 0;
+  get userAge(): number { return this._userAge; }
+  set userAge(value: number) { this._userAge = value < 0 ? 0 : value; }
 }
-// A fragment of HTML Template (example.component.html):
-<input [(ngModel)]="age" name="age" type="number">
+// Usage:
+<input [(ngModel)]="userAge" type="number">
 
 // ######################################################################################################
 // ######################################################################################################
@@ -466,7 +460,7 @@ export class ExampleComponent {
 
 // @Input() decorator denotes a child component's property as an input property.
 // When you decorate a component's property with @Input(), you enable that property to receive values from its parent component.
-// The parent HTML template passes the value using attribute binding in the Angular template syntax (whith square brackets).
+// The parent HTML template passes the value using Property Binding (the square brackets syntax).
 
 // Consider a simple Angular component that displays a user's name.
 // The user's name is a property that the parent component can pass to this child component.
@@ -478,7 +472,7 @@ import { Component, Input } from '@angular/core';
   template: `<h1>Welcome, {{ nameInChild }}!</h1>`
 })
 export class ChildComponent {
-  // Thanks to the @Input() decorator, the "name" property is designed to accept data from the component where it will be placed:
+  // Thanks to the @Input() decorator, the "nameInChild" property is designed to accept data from the component where it will be placed:
   @Input() nameInChild: string;
 }
 
@@ -497,41 +491,21 @@ export class ParentComponent {
   <app-user [nameInChild]="nameInParent"></app-user>
 </div>
 
+// You see that the input property of the child component ("nameInChild") is used as a property of the custom HTML tag specified in the child's selector (<app-user>).
 // The value of ParentComponent.nameInParent ('John Doe') is assigned to ChildComponent.nameInChild.
 
-// You see that the input property of the child component class ("nameInChild") is used as a property of the custom HTML tag specified in the child's selector.
-// Remember that well since you will use this pattern in your real applications frequently!
-// The HTML tag's property must be in square brackets since its value is not hardcoded - it's a property of the child component class.
-
-
-// @@@ Parent/Child relationship
-
-// Angular creates a hierarchy of components that follows the structure defined in the templates.
-// This hierarchical structure determines the data flow from parent components to child components.
-// Each time a component selector (like "app-user") is used in a template, it corresponds to an instance of that component (like ParentComponent)
-// 		being created when Angular processes the template.
-// For example, when this line is rendered in the Parent Component's template
-  <app-user [nameInChild]="nameInParent"></app-user>
-// that automatically creates an instance of the class which has "app-user" selector, i.e. ChildComponent.
-
-// Angular does not expose or manage individual named instances	like traditional object-oriented programming might suggest -
-// 	 no pointer to the created object is available to the coder.
-
-// A child component in Angular does not need to "know" from which parent to pick the value —
-// 		it is implicitly determined by its placement within the parent’s template.
-// The direct container relationship ensures the child component only accesses properties from its immediate parent component.
-
-// Execution Flow:
-// * Initialization:
-//		  When Angular initializes the components, it processes the template of each component.
-// * Component Interaction:
-//		  As Angular processes the template of the ParentComponent, it recognizes the property binding syntax
-//		    and looks up the value of nameInParent in the ParentComponent.
-// * Data Transfer:
-//		  Angular then assigns the value of nameInParent to the nameInChild property of the ChildComponent. This transfer is handled by Angular's
-//		    change detection mechanism, which ensures that the child component receives the current value of the property from the parent component.
-// * Rendering:
-//		  The ChildComponent then uses this value in its template (<h1>Welcome, {{ nameInChild }}!</h1>), rendering the name passed from the parent.
+// Remember this pattern well since you will use it in your real applications frequently!
+// A typical scenario: you have a module's high-level component that renders the main screen structure.
+// This component stores the module's core data and passes it to its child components (various parts of the screen) using property binding.
+// For example, the main Customer component stores customerId and passes it to its child components - Address and Orders.
+// The Customer component has:
+public customerId: number;
+// Both child components have:
+@Input() contextCustomerId: number;
+// In the HTML template of the Customer component:
+<app-address [contextCustomerId]="customerId"></app-address>
+<app-order-list [contextCustomerId]="customerId"></app-order-list>
+// Then, the child components use the passed customerId as a retrieval parameter for their data.
 
 // @@@ Required input
 
@@ -553,11 +527,12 @@ class ChildComponent {
 // That will throw an error: Required input 'name' from component ChildComponent must be specified.
 
 // Notice that "required" means that it must appear in the parent component's template.
-// It doesn't mean that the value of the property cannot be null or undefined - for example, the parent template can legally sent null.
+// It doesn't mean that the value is required - the parent template can legally sent null or undefined.
 
-// @@@ Aliasing - @Input() decorator can accept a parameter:
+// @@@ Aliasing
 
-// Alias allows you to specify a different name for the input property as it should appear in the template binding.
+// The @Input() decorator can accept a string parameter which is an alias of the property.
+// Alias allows you to specify a different name for the input property - as it should appear in the template binding.
 // This is useful when you want to use an internal property name within your component but expose a different name externally.
 // In the next example, the child component uses "cstName" internally, but the parent populates it through the HTML attribute "customerName".
 
@@ -593,7 +568,7 @@ export class CustomerProfileComponent {
 // In the child component class:
 @Output() eventEmitterInChild = new EventEmitter<T>();
 
-// To send data outwards, use the emit() method of the EventEmitter:
+// To send data outwards, call the emit() method of the EventEmitter:
 this.eventEmitterInChild.emit(data);
 
 // In the parent's template, use event binding to listen for the custom event:
@@ -626,13 +601,13 @@ export class ParentComponent {
 
 // @@@ $event
 
-// Review this line:
+// Review this line of the parent component:
   template: '<app-child (eventEmitterInChild)="reactToChildMessage($event)"></app-child>'
 // $event is a special variable in Angular template syntax which represents the data emitted by the event.
 // In our example, $event contains the string emitted by eventEmitterInChild in the child component.
 // The parent's reactToChildMessage() method receives this string as its argument.
 
-// The data type of $event is dictated by the data type passed to EventEmitter<T> as T, which is string in our example:
+// The data type of $event is dictated by the T passed to EventEmitter<T>, which is string in our case:
   @Output() eventEmitterInChild = new EventEmitter<string>();
 
 // However, it could be any type. In the next example, it's an object:
@@ -645,7 +620,7 @@ interface IUser {
 // The child component:
 import { Component, Output, EventEmitter } from '@angular/core';
 
-// Remark: ngSubmit (in "template") is a directive which fires when the form is submitted; described later in the file.
+// Remark: ngSubmit (in "template") is a directive which fires when the form is submitted; it will be described soon.
 @Component({
   selector: 'app-user-form',
   template: `
@@ -665,7 +640,7 @@ export class UserFormComponent {
   };
 
   onSubmit() {
-    this.userSubmitted.emit(this.user);
+    this.userSubmitted.emit(this.user); // the value passed will be available to the parent template as the $event variable
   }
 }
 
@@ -683,7 +658,7 @@ export class UserFormComponent {
 export class ParentComponent {
   submittedUser: IUser | null = null;
 
-  handleUserSubmission(user: IUser) {
+  handleUserSubmission(user: IUser) { // user contains the object, passed from the template as $event
     this.submittedUser = user;
     console.log('Received user data:', user);
   }
