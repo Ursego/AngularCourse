@@ -126,18 +126,18 @@ let targetVar = sourceVar;
 // After the assignment, there is no connection between them.
 // If sourceVar is changed later, targetVar will not know that - it will keep holding its existing value.
 
-// When the source var is an Observable, the source var gets the value in the moment of subscribing, like in the regular assignmnet.
-// However, the link between the vars keeps to exist. So any changes in the source var will automatically be emitted to the target var to keep them in sync.
+// When the source var is an Observable, the target var gets the value in the moment of subscribing, like in the regular assignmnet.
+// However, the link between the vars keeps to exist - any changes in the source var will automatically be emitted to the target var to keep them in sync.
 // I.e., instead of getting a single value, the target var subscribes to the Observable to receive multiple values over time.
 
 // Observables are a way to handle asynchronous data streams like HTTP requests, user input, and more.
-// This is the foundation and core tool of RxJS, so it is important to understand and "feel" it.
+// This is the foundation and core tool of RxJS, so it's important to understand and "feel" it.
 
 // Observable variables' names must end with $. That is not enforced by compiler but it's an accepted naming convention.
 
 // The next example uses of() - a utility function that creates an Observable which emits the values provided as arguments, one after the other.
-// Calling subscribe() for the first subscriber "activates" the Observable and it starts emitting values.
-// After emitting the last value, the Observable completes (i.e., it doesn't emit any more values).
+// Calling subscribe() by the first subscriber "activates" the Observable and it starts emitting values.
+// After emitting the last value, the Observable completes (i.e., no more emits values).
 
 import { of } from 'rxjs';
 // Create an object that emits the values 1, 2, and 3:
@@ -145,34 +145,37 @@ const threeNumbers$: Observable<number> = of(1, 2, 3);
 // Or:
 const threeNumbers$ = of(1, 2, 3); // the type Observable<number> is inferred
 // Subscribe to the observable and log each emitted value:
-threeNumbers$.subscribe((val: String) => console.log(val)); // outputs: 1, 2, 3
+threeNumbers$.subscribe((val: number) => console.log(val)); // outputs: 1, 2, 3
 
-// You could ask: What exactly does subscribe to the Observable?
-// !!! ==>> The function passed to .subscribe() is the subscriber (observer).
-// In this case, the subscriber is:
-(val: String) => console.log(val)
-// !!! ==>> Each time the Observable emits a value, that function is called, getting the emitted value as the parameter.
-// !!! ==>> This pattern is the cornerstone of reactive programming!
-
-// The name of the subscribe() method is misleading - calling it looks like the Observable is subscribing to something, when in fact it is being subscribed to.
-// It would be more correct to name this method getSubscribedBy().
-
-// The flow steps:
+// Here is what happens after calling subscribe():
 
 // * Value 1 is emitted: The subscriber function is called with 1, so console.log(1) runs.
 // * Value 2 is emitted: The subscriber function is called with 2, so console.log(2) runs.
 // * Value 3 is emitted: The subscriber function is called with 3, so console.log(3) runs.
 // * The Observable completes, and no further emissions occur.
 
-// @@@ A real life use case:
+// You could ask: "What exactly does subscribe to the Observable?"
+// Read the answer carefully and remember it well:
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! The function passed to .subscribe() as the parameter is the subscriber (observer).
+// !!! Each time the Observable emits a value, that function is called, getting the emitted value as the parameter.
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// In the previous example, the subscriber is:
+(val: number) => console.log(val)
+// This pattern is the cornerstone of reactive programming!
 
-// In the previous example, the Observable "knew" in advance which values and how many times it will emit.
-// In real applications, this happens rarely.
-// Most often, the Observable itself expects that its value will be changed. When this happens, it emits that new value.
+// The name of the subscribe() method is misleading - calling it looks like the Observable itself subscribs to something, while it is being subscribed to.
+// It would be more correct to name this method getSubscribedBy().
+
+// @@@ A real life use case
+
+// In the previous example, the Observable "knew" in advance which values and how many times it will emit, since all the values were provided by of() in advance.
+// In real applications, this rarely happens (usually, when an Observable receives a data set to emit retrieved from DB).
+// Most often, an Observable itself does not know whether its initial value will ever change, and how many times. But when this happens, it emits that new value.
 // Typical scenario:
 // * The component class has a variable of type Observable.
 // * A text element in the HTML template is subscribed to it.
-// * The Observable is empty, so the text element doesn't display anything.
+// * The Observable is empty, so the text element is blank.
 // * Then the application retrieves a value from the database and places it in the Observable.
 // * This is where the magic happens - the value is immediately shown to the user, without you having to copy it manually.
 
@@ -180,16 +183,16 @@ threeNumbers$.subscribe((val: String) => console.log(val)); // outputs: 1, 2, 3
 // * The async Pipe to read from an Observable in an HTML template
 // ######################################################################################################
 
-// subscribe() is a TypeScript method. In HTML, you use the async Pipe instead - it's even simpler.
+// subscribe() is a TypeScript method. In an HTML template, you use the async Pipe instead - it's even simpler.
+// You subscribe for an Observable directly by writing its name (followed by "| async") as an Interpolation expression.
 // Let's say, your component class has this:
-screenTitle$: Observable<string>
+screenTitle$: Observable<string>;
 // In the template, it could be subscribed this way:
 <h2>{{ screenTitle$ | async }}</h2>
-// The Observable must be public in the component class to be accessible from the template.
+// To be accessible from the template, the Observable must be public in the component class (like any other properties and functions referenced in HTML).
 
 // Another classical example - building an HTML list (<ul>) with items (<li>) rendered dynamically from an Observable which emits an array.
 // In the next example, the component class has the customerList$ Observable.
-// In the real life, it would be populated from the DB (e.g., via an HTTP call), but let's hardcode the values to keep the example simple:
 
 import { Component } from '@angular/core';
 import { Observable, of } from 'rxjs';
@@ -200,6 +203,7 @@ import { ICustomer } from 'src/models/customer.model';
   templateUrl: './customer-list.component.html',
 })
 export class CustomerListComponent {
+  // In the real life, the Observable would be populated from the DB via an HTTP call, but let's hardcode the values to keep the example simple:
   customerList$: Observable<ICustomer[]> = of([
     { customerId: 1, firstName: 'John', lastName: 'Doe' },
     { customerId: 2, firstName: 'Jane', lastName: 'Smith' },
@@ -229,16 +233,12 @@ export class CustomerListComponent {
 //    the HTML will be automatically re-rendered as a new array is emitted.
 
 // ######################################################################################################
-// * Manipulating an Observable's value in the imperative way (as a regular variable)
+// * Manipulating an Observable's emitted value in the imperative way (as a regular variable)
 // ######################################################################################################
 
-// An Observable can do only three things:
-//  * Emit its value to the subscriber.
-//  * Be subscribed (the first emission occurs when subscribe() is called).
-//  * Be changed (each change will immediately emit the new value).
-// The value of an Observable cannot be accessed (read) directly like in regular variables. You cannot write "if (amount$ > 0)..." in the reactive programming world.
-// If you need to work with the value of an Observable in the imperative way, that value must firstly be emitted into a regular variable.
-// The assignment of the Observable's value to the non-Observable variable must be manually coded inside the subscribing functiond, for example:
+// A value an Observable emits cannot be accessed (read) directly like a value of a regular variable. You cannot write "if (amount$ > 0)..." in the reactive programming world.
+// If you need to work with an emitted value in the imperative way, that value must firstly be emitted into a regular variable.
+// The assignment of the Observable's value to the non-Observable variable must be manually coded inside the function passed to subscribe(), for example:
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
@@ -254,6 +254,8 @@ export class ProductComponent implements OnInit, OnDestroy {
   private _contextProduct: IProduct; // a regular variable
   private _s: Subscription; // Subscription will be described soon, ignore it for now
 
+  // Store is a module-level data storage. It will be described in the next section of the course.
+  // It's usually injected into each Component's constructor:
   constructor(private _store: Store<any>) { }
 
   ngOnInit(): void {
@@ -262,23 +264,24 @@ export class ProductComponent implements OnInit, OnDestroy {
     // STEP 2: Populate the regular var from the Observable
     //         (that will run the subscribing function right away - in addition to subsequent listening for future changes):
     this._s = this.contextProduct$.subscribe(
-      // The assignment of the Observable's value to the non-Observable variable occurs inside the function you pass to the subscribe() method:
+      // It's your responsibility to assign the Observable's emitted value to the non-Observable variable inside the function you pass to the subscribe() method.
+      // Luckily, that value is automatically passed to that function - in fact, it's "the first station" where you can grab that value in the "imperative way":
       (p: IProduct) => this._contextProduct = p
     );
   }
 
   isTooExpensive(): boolean {
     // return (this.contextProduct$.price > 100); // compilation error - the Observable<IProduct> type has no "price" property
-    return (this._contextProduct.price > 100); // success - the IProduct type does have the "price" property
+    return (this._contextProduct.price > 100); // success
   }
 
-  ngOnDestroy = () => this._s.unsubscribe;
+  ngOnDestroy = () => this._s.unsubscribe(); // unsubscribe() will be described right away
 }
 
-// The above example is a very popular pattern.
+// The above example is a very popular pattern since we use the Module data a lot in Components logic.
 
 // ######################################################################################################
-// * More about Subscription
+// * The need to unsubscribe. The Subscription object
 // ######################################################################################################
 
 // While JavaScript's garbage collector (GC) does handle the automatic deallocation of memory for objects that are no longer referenced, 
@@ -330,7 +333,7 @@ export class ExampleComponent implements OnDestroy {
   }
 
   // Unsubscribing when the component is destroyed:
-  ngOnDestroy = () => this._s.unsubscribe;
+  ngOnDestroy = () => this._s.unsubscribe();
 }
 
 // @@@ One Subscription object per component
@@ -358,7 +361,7 @@ export class ExampleComponent implements OnInit, OnDestroy {
     );
   }
 
-  ngOnDestroy = () => this._s.unsubscribe; // that cancels both the subscriptions
+  ngOnDestroy = () => this._s.unsubscribe(); // that cancels both the subscriptions
 }
 
 // Scenarios When Unsubscribing Is Necessary:
