@@ -20,20 +20,19 @@
 //		Each class name passed to [ngClass]) appears (or doesn't appear) depending on its boolean expression.
 
 // In fact, [ngClass] is a special case of the Property binding.
-// Property binding will be described in https://github.com/Ursego/AngularCourse/blob/main/07%20Data%20Binding.ts soon.
-// But I'll tell you in advance that the Property binding syntax is
+// Property binding will be described soon, but I'll tell you in advance that the Property binding syntax is
 [html_property]="component_variable_or_method"
 // like
 <div [class]="getButtonClasses()"></div>
 // For the last example, getButtonClasses() could return something like: "btn btn-lg btn-primary" or "btn btn-sm btn-secondary disabled"
 
-// So, if we already have [class] which accepts a CSS classes which are built dinamically, why to use [ngClass]?
+// So, if we already have [class] which accepts a dinamically built CSS classes list, why do we need [ngClass]?
 // There are some differences between them:
 
 // [class]
 // 		You must provide a complete string that will be assigned to the "class" property as is. This follows the standard behavior of Property binding.
 //		The string must be a space-separated list of CSS classes, and nothing else.
-// 		It completely replaces the previous value of the "class" property, removing any static classes that existed on the element but aren't included in the new string.
+// 		It completely replaces the previous value of the HTML "class" property, removing any static classes that existed on the element but aren't included in the new string.
 
 // [ngClass]
 // 		Much more flexible.
@@ -62,26 +61,26 @@
 <div [ngClass]="{'active': isActive, 'disabled': !isEnabled, 'highlight': isImportant()}">
 // In each pair:
 // 		* the key is the CSS class name;
-// 		* the value is a boolean expression (normally, the component's property or method) which governs wether or not the CSS class must be applied
+// 		* the value is a boolean expression (normally, the component's property or method) which governs wether or not the CSS class must be applied.
 
 // REMARK REGARDING #1, #2 AND #3:
 // In fact, you will never assign a hardcoded string to [ngClass] as shown in #1 and #2.
-// Their examples only demonstrate values which are normally built dynamically and returned by a method of the component class. That is the subject of #4.
+// These examples only demonstrate strings which are normally built dynamically and returned by a method of the component class. That is the subject of #4.
 // The pattern of #3 can be used with the string hardcoded - the actual classes are still added dynamically by the boolean expressions.
 // But it's better to incapsulate the logic in a method which retrns the dictionary's values as true and false - try to minimize logic in HTML templates.
 
-// #4. Component method returning any of the above:
+// #4. Component method returning a string like in #1, #2 or #3:
 <div [ngClass]="getClasses()">
 
 // This pattern
-[ngClass]="<a method returning either #1, #2 or #3>")
+[ngClass]="<a method returning a string like in #1, #2 or #3>")
 // is what you will use in real work.
 
 // A sample getClasses() method which returns a string (#1) or an array (#2) would be simple - just add (or don't add) classes to the string or array depending on conditions.
 // If no CSS classes shuld be applied due to all the conditions being false, make the method return an empty string (return '') or an empty array (return []).
 
 // But a sample getClasses() method which returns an object (#3) is more interesting.
-// Of course, the dictionary's values in that object will be true and false, not Boolean expressions to produce them as was shown in #3:
+// Of course, the dictionary's values in that object will be "ready to cook" true and false, not Boolean expressions to produce them as was shown in #3:
 @Component({
 	selector: 'app-my-component',
 	template: 'app-my-template'
@@ -112,10 +111,11 @@
 
 // Note the type getClasses() returns:
 { [key: string]: boolean }
-// It's a TypeScript index signature which defines a key-value object where the keys are strings and the values are booleans.
+// It's a TypeScript index signature which defines a key-value object with an arbitrary number of pairs, where the keys are strings and the values are booleans.
 // "key" is not actually used in the code but serves as a placeholder name for the key in the index signature.
-// You can use any name for the placeholder in the index signature, not just "key". For example:
+// You can use any name for the placeholder in the index signature, not just "key", for example:
 { [property: string]: any }
+// or
 { [prop: string]: any }
 
 // @@@ Combination of static and dynamic classes:
@@ -135,7 +135,7 @@ getDiscountedClasses(product: IProduct): { [key: string]: boolean } {
 
 // Then the rendered HTML will be:
 <div class="bold strikethrough italic">
-// The point is that 'bold' is still there, [ngClass] didn't erase it - instead, it added something to it.
+// The point is that 'bold' is still there, [ngClass] didn't erase it - instead, it just added new classes after it.
 
 // If the same class appears in both, it's not duplicated.
 // For example, if the returned object would include 'bold':
@@ -146,6 +146,7 @@ getDiscountedClasses(product: IProduct): { [key: string]: boolean } {
 { bold: false, strikethrough: true, italic: true }
 // In this case, the rendered <div> would not have 'bold' because [ngClass] explicitly removed it, even if 'bold' was statically defined in the class attribute before:
 <div class="strikethrough italic">
+// Angular is smart!
 
 // This behavior allows for a flexible combination of static and dynamic class application.
 // The hardcoded static classes provide a baseline, while [ngClass] adds or removes classes based on component logic.
@@ -155,6 +156,7 @@ getDiscountedClasses(product: IProduct): { [key: string]: boolean } {
 // ######################################################################################################
 
 // Used to dynamically apply inline styles to HTML elements based on component logic.
+// Renders to the standard HTML 'style' attribute.
 // In contrast to [ngClass], it doesn't add or remove CSS properties, it only changes values of existing properties.
 // Syntax:
 [ngStyle]="expression"
