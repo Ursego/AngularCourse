@@ -233,54 +233,6 @@ export class CustomerListComponent {
 //    the HTML will be automatically re-rendered as a new array is emitted.
 
 // ######################################################################################################
-// * Manipulating an Observable's emitted value in the imperative way (as a regular variable)
-// ######################################################################################################
-
-// A value an Observable emits cannot be accessed (read) directly like a value of a regular variable. You cannot write "if (amount$ > 0)..." in the reactive programming world.
-// If you need to work with an emitted value in the imperative way, that value must firstly be emitted into a regular variable.
-// The assignment of the Observable's value to the non-Observable variable must be manually coded inside the function passed to subscribe(), for example:
-
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Observable, Subscription } from 'rxjs';
-import { Store } from '@ngrx/store';
-import { IProduct } from 'src/models/customer.model';
-
-@Component({
-  selector: 'app-product',
-  templateUrl: './product.component.html',
-})
-export class ProductComponent implements OnInit, OnDestroy {
-  contextProduct$: Observable<IProduct>; // an Observable
-  private _contextProduct: IProduct; // a regular variable
-  private _s: Subscription; // Subscription will be described soon, ignore it for now
-
-  // Store is a module-level data storage. It will be described in the next section of the course.
-  // It's usually injected into each Component's constructor:
-  constructor(private _store: Store<any>) { }
-
-  ngOnInit(): void {
-    // STEP 1: Populate the Observable from the Store:
-    this.contextProduct$ = this._store.select('contextProduct');
-    // STEP 2: Populate the regular var from the Observable
-    //         (that will run the subscribing function right away - in addition to subsequent listening for future changes):
-    this._s = this.contextProduct$.subscribe(
-      // It's your responsibility to assign the Observable's emitted value to the non-Observable variable inside the function you pass to the subscribe() method.
-      // Luckily, that value is automatically passed to that function - in fact, it's "the first station" where you can grab that value in the "imperative way":
-      (p: IProduct) => this._contextProduct = p
-    );
-  }
-
-  isTooExpensive(): boolean {
-    // return (this.contextProduct$.price > 100); // compilation error - the Observable<IProduct> type has no "price" property
-    return (this._contextProduct.price > 100); // success
-  }
-
-  ngOnDestroy = () => this._s.unsubscribe(); // unsubscribe() will be described right away
-}
-
-// The above example is a very popular pattern since we use the Module data a lot in Components logic.
-
-// ######################################################################################################
 // * The need to unsubscribe. The Subscription object
 // ######################################################################################################
 
@@ -290,57 +242,28 @@ export class ProductComponent implements OnInit, OnDestroy {
 // If an Observable remains active after a component has been destroyed or if the user navigates away from the page, the component may
 //    never be fully garbage-collected because the Observable is still holding a reference to it.
 
-// Some Observables involve active processes (e.g., WebSockets or timers).
-// These processes may continue running even if the component or context they are part of has been destroyed:
-interval(1000).subscribe(value => {
-  console.log(value); // will log a value every second indefinitely
-});
-
 // To stop the emitting, you need to unsubscribe. To unsubscribe, you need a reference to the subscription.
 // This is where the Subscription object comes to our aid.
 
-// Subscription is an RxJS object that represents the execution of an Observable.
-// It allows you to manage and control the lifecycle of the Observable stream.
+// Usually, the subscription "kitchen" consists of 3 steps:
 
-// When you subscribe to an Observable, the subscribe() function returns a Subscription object:
-private _s: Subscription = interval(1000).subscribe(value => {
-  console.log(value);
-});
+// 1. Creating a Subscription variable. As we've seen in the previous example:
+private _s: Subscription;
+
+// 2. Creating a Subscription object. 
+// When you subscribe to an Observable, the subscribe() function returns a Subscription object you assign to the variable:
+this._s = this.contextProduct$.subscribe(...);
  
-// When a component is destroyed (typically in the ngOnDestroy() hook), you should unsubscribe from any active subscriptions to avoid memory leaks:
+// 3. Unsubscribing.
+// When you have done with a component, you should unsubscribe from any active subscriptions you manually created - to avoid memory leaks:
 this._s.unsubscribe();
+// That is typically done in the ngOnDestroy() hook.
 
-// It's especially important to unsubscribe from long-lived Observables (like those tied to user input).
-// Here's an example of how you use a Subscription in a component to subscribe to an Observable (e.g., valueChanges from a form control):
-
-import { Component, OnDestroy } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { Subscription } from 'rxjs';
-
-@Component({
-  selector: 'app-example',
-  template: `<input [formControl]="searchControl">`
-})
-export class ExampleComponent implements OnDestroy {
-  searchControl = new FormControl('');
-  private _s: Subscription;
-
-  constructor() {
-    // Subscribing to form control value changes:
-    this._s = this.searchControl.valueChanges.subscribe(
-      (val: String) => console.log('Search input:', val)
-    );
-  }
-
-  // Unsubscribing when the component is destroyed:
-  ngOnDestroy = () => this._s.unsubscribe();
-}
-
-// @@@ One Subscription object per component
+// @@@ One Subscription object per component, not per subscription
 
 // It's important to understand that Subscription is a subscriptions manager rather than a single subscription as its name mistakenly suggests.
 // In the component, you create only once instance of it, and add multiple subscriptions using the add() method.
-// Then, when you unsubscribe, all these subscriptions will be canceled at one stroke. Example:
+// Then, when you call unsubscribe(), all these subscriptions will be canceled at one stroke. Example:
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 
@@ -348,33 +271,19 @@ import { Subscription, interval } from 'rxjs';
   selector: 'app-example',
   template: '<p>Example Component</p>',
 })
-export class ExampleComponent implements OnInit, OnDestroy {
+export class SubscriptionExampleComponent implements OnInit, OnDestroy {
   private _s = new Subscription();
 
   ngOnInit(): void {
-    this._s.add(
-      interval(1000).subscribe(() => console.log('Subscription 1 tick'))
-    );
-
-    this._s.add(
-      interval(2000).subscribe(() => console.log('Subscription 2 tick'))
-    );
+    this._s.add(interval(1000).subscribe(() => console.log('Subscription 1 tick')));
+    this._s.add(interval(2000).subscribe(() => console.log('Subscription 2 tick')));
+    this._s.add(interval(3000).subscribe(() => console.log('Subscription 3 tick')));
   }
 
-  ngOnDestroy = () => this._s.unsubscribe(); // that cancels both the subscriptions
+  ngOnDestroy = () => this._s.unsubscribe(); // that cancels all three subscriptions
 }
 
-// Scenarios When Unsubscribing Is Necessary:
-
-// * Component Destruction:
-//     When a component is destroyed (e.g., during route navigation or page closure),
-//        any active subscriptions tied to that component should be cleaned up to avoid keeping the component in memory.
-// * Event Streams:
-//     Observables like those created by fromEvent() for DOM events will continue to listen for events unless explicitly unsubscribed.
-// * Long-lived Observables:
-//     Streams like interval(), timer(), or WebSocket-based Observables may never complete on their own and require explicit unsubscription.
-
-// Scenarios When Unsubscription Is Not Needed:
+// Scenarios When Unsubscription Is NOT Needed:
 
 // * Finite Observables:
 //    Observables that complete on their own (like HTTP requests in Angular's HttpClient) automatically clean themselves up after completion:
@@ -389,8 +298,8 @@ export class ExampleComponent implements OnInit, OnDestroy {
 // * RxJS operators
 // ######################################################################################################
 
-// RxJS operators are functions that allow you to transform, filter, and manipulate the data emitted by Observables.
-// They reduce data streams that take an Observable as input and return another Observable.
+// RxJS operators are functions that allow you to reduce data streams - transform, filter, and manipulate the data emitted by Observables.
+// They take an Observable as input and return another Observable.
 // Typically used within the Observable's pipe() method (will be described soon), allowing you to chain multiple operations together.
 // They're fundamental to working with Observables and are frequently used in Angular applications for handling asynchronous data flows and events.
 
@@ -444,11 +353,13 @@ of(1, 2, 3, 4, 5).pipe(last(x => x < 4)) // emits 3 and completes
 // * pipe()
 // ######################################################################################################
 
-// REMARK: Not to be confused with the Angular Pipes used for data transformations in templates!
+// REMARK: Not to be confused with the pipes used for data transformations in HTML templates!
 
 // pipe() is an RxJS function that combines and chains multiple RxJS operators together to transform or manipulate streams of data (Observables).
-// Typically, it accepts a series of RxJS operators to process or modify the data emitted by an Observable, such as map(), filter() and take().
-// pipe() takes those operators as arguments and applies them sequentially (!) to the Observable for which it's called.
+// Typically, it accepts a series of RxJS operators (as a vararg) to process or modify the data emitted by an Observable, such as map(), filter() and take().
+// pipe() applies those operators sequentially (!) to the Observable for which it's called.
+// A value, emitted by each operator, becomes an input for the next operator in the chain.
+// A value, emitted by the last operator, becomes the output of pipe().
 // This chaining makes it easier to manage complex data transformations and handle asynchronous operations in a clean and readable manner.
 
 // Key Point: pipe() is reactive. It automatically subscribes to the Observable and updates the view whenever a new value is emitted.
@@ -470,8 +381,8 @@ tenNumbers$.pipe(
 
 // As you see, the input stream of each subsequent operator, passed to pipe(), is the output stream of the operator prior to it.
 
-// In an RxJS-based codebase, using pipe() is a consistent and standardized way to apply operators, regardless of how many you use.
-// We use pipe() even if only one RxJS operator exists and there is nothing to chain, for example:
+// In an RxJS-based codebase, using pipe() is a consistent and standardized way to apply operators, regardless of how many we use.
+// We use pipe() even if there is only one RxJS operator and we have nothing to chain, for example:
 tenNumbers$.pipe(
   map(value => value * 2)
 );
@@ -480,3 +391,88 @@ tenNumbers$.pipe(
 // This is the current standard. The older "dot chaining" style, like
 tenNumbers$.map(value => value * 2)
 // has been deprecated.
+
+// ######################################################################################################
+// * Manipulating an Observable's emitted value in the imperative way (as a regular variable)
+// ######################################################################################################
+
+// A value an Observable emits cannot be accessed (read) directly like a value of a regular variable. You cannot write "if (amount$ > 0)..." in the reactive programming world.
+// When you need to work with an emitted value in the imperative way, that value must firstly be emitted into a regular variable.
+// The assignment of the Observable's value to the non-Observable variable must be manually coded inside the function passed to subscribe(), for example:
+
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Observable, Subscription } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { IProduct } from 'src/models/customer.model';
+
+@Component({
+  selector: 'app-product',
+  templateUrl: './product.component.html',
+})
+export class ProductComponent implements OnInit, OnDestroy {
+  contextProduct$: Observable<IProduct>; // an Observable
+  private _contextProduct: IProduct; // a regular variable
+  private _s: Subscription; // Subscription will be described soon, ignore it for now
+
+  // Store is a module-level data storage. It will be described in the next section of the course.
+  // It's usually injected into each Component's constructor:
+  constructor(private _store: Store<any>) { }
+
+  ngOnInit(): void {
+    // STEP 1: Populate the Observable from the Store:
+    this.contextProduct$ = this._store.select('contextProduct');
+    // STEP 2: Populate the regular var from the Observable
+    //         (that will run the subscribing function right away - in addition to subsequent listening for future changes):
+    this._s = this.contextProduct$.subscribe(
+      // It's your responsibility to assign the Observable's emitted value to the non-Observable variable inside the function you pass to the subscribe() method.
+      // Luckily, that value is automatically passed to that function - in fact, it's "the first station" where you can grab that value in the "imperative way":
+      (p: IProduct) => this._contextProduct = p
+    );
+  }
+
+  isTooExpensive(): boolean {
+    // return (this.contextProduct$.price > 100); // compilation error - the Observable<IProduct> type has no "price" property
+    return (this._contextProduct.price > 100); // success
+  }
+
+  ngOnDestroy = () => this._s.unsubscribe(); // unsubscribe() will be described right away
+}
+
+// The above example is a very popular pattern since we use the Module data a lot in Components logic.
+
+// @@@ Debugging an Observable
+
+// Sometimes you need to debug an Observable, i.e. check which value it emits.
+// Since you cannot do that in the debugger directly, you need to bring the emitted value to the "imperative world" within the subscribe() function.
+// Let's say, you have
+private _orderAmt$: Observable<number>;
+// To see what it emits, add to the function you are debugging:
+this._orderAmt$.pipe(take(1)).subscribe(val => {
+  console.log(`_orderAmt$ emitted ${val}`); // or: alert(`_orderAmt$ emitted ${val}`);
+});
+// This approach utilizes the fact that the first emission happens on subscribe().
+// Notice that pipe() auto-unsubscribes, so no manual unsubscribing needed.
+
+// Debugging Observables is such a common thing that I recommend creating a dedicated function for this:
+import { Observable } from 'rxjs';
+import { take } from 'rxjs/operators';
+
+export function dbg<T>(obs: Observable<T> | null | undefined, obsName?: string): void {
+  if (!obsName) {
+    obsName = "The Observable";
+  }
+
+  if (!obs) {
+    console.log(`${obsName} is null or undefined`); // or: alert(`${obsName} is null or undefined`);
+    return;
+  }
+
+  obs.pipe(take(1)).subscribe(val => {
+    console.log(`${obsName} emitted ${val}`); // or: alert(`${obsName} emitted ${val}`);
+  });
+}
+
+// Then, use it the function you are debugging (don't forget to import, of course):
+dbg(this._orderAmt$, '_orderAmt$');
+
+
