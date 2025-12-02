@@ -1,13 +1,13 @@
-// https://ngrx.io/
+// https://NgRX.io/
 
 // ######################################################################################################
-// What is NgRx?
+// What is NgRX?
 // ######################################################################################################
 
-// NgRx (Angular Reactive Extensions) is a framework for building reactive applications in Angular.
+// NgRX (Angular Reactive Extensions) is a framework for building reactive applications in Angular.
 // It's a state management library that implements the Redux pattern using RxJS (Reactive Extensions for JavaScript)
 //    to manage the application state in a reactive and predictable way.
-// NgRx provides a set of libraries for managing the global state, side effects, and entity collections, among other functionalities.
+// NgRX provides a set of libraries for managing the global state, side effects, and entity collections, among other functionalities.
 // It's particularly useful in large-scale applications where managing state in an efficient, predictable, centralized, scalable and maintainable way is critical.
 
 // CONTENTS (to jump to a section, copy it with the asterisk, like "* Reducer" -> Ctrl+F -> Ctrl+V):
@@ -26,7 +26,7 @@
 // ######################################################################################################
 
 // The Model file declares the data types which represent the module's entities, ensuring strong typing.
-// These types define the data structures that will be managed by the NgRx State (will be described soon). Example:
+// These types define the data structures that will be managed by the NgRX State (will be described soon). Example:
 
 export interface ICustomer {
   customerId: number;
@@ -59,8 +59,8 @@ export interface IProduct {
 // ######################################################################################################
 
 // At high level, an application is a collection of modules.
-// Each module normally represents a single domain/area and includes a screen (and dependent popup screens it opens, if any).
-// State refers to a singleton object that holds all the data of a module as it is at the current moment (i.e. the current state of the module).
+// Each module normally represents a single domain/area and includes a screen (and dependent popup screens, if any).
+// State refers to a singleton object that holds all the data of a single module as it is at the current moment (i.e. the current state of the module).
 
 // A module usually consists of a few components:
 
@@ -76,20 +76,22 @@ export interface IProduct {
 //      https://github.com/Ursego/AngularTypeScriptCSharpCodeExamples/blob/main/4%20Angular/data-chg-sub/data-chg-sub-card/data-chg-sub-card.component.ts
 //      So, the following HTML will be rendered on the selector's place:
 //      https://github.com/Ursego/AngularTypeScriptCSharpCodeExamples/blob/main/4%20Angular/data-chg-sub/data-chg-sub-card/data-chg-sub-card.component.html
-//      Note using the word Card. It is in Angular slang what Form is in other frameworks (i.e. a group of fields describing the details of a single database record).
+//      Note using the word Card. It is in Angular slang what Form is in other frameworks (i.e. a group of related fields retrieved and submitted together).
+//      BTW, that real parent component contains 5 child components located in different areas of the screen, some of whem - on tabs of a Tab control.
+//      You can find them by fearching for "<app-data-".
 
 // - Components for dependent screens opened from the main screen. They can be opened by either the parent or a child component.
-//      Note that we don't call them child components - thay are the top-level components of their own screen (since there are no other components there).
+//      Note that we don't call them child components - they are the top-level components of their own screens (since there are no other components there).
 
 // Each component has a dedicated data structure in the State of the module it belongs to.
 
 // As an example, let's consider a Customer module. That screen is extremely unrealistic, but its entities are convenient for explaining the concept.
 
-// CustomerComponent is the highest-level container. It has the following visual structure:
+// CustomerComponent is the high-level container. It has the following visual structure:
 // * On the left side - a narrow vertical panel which is displayed always. It includes:
 //    ** A customer search widget (CustomerSearchComponent) with input fields to search by, and a Search button.
 //    ** A list of customers (CustomerListComponent) found by the entered search criteria.
-// * When the user selects a customer in the list, the main part of the screen displays info for the selected customer:
+// * When the user selects a customer in that list, the main part of the screen displays info for the selected customer:
 //      ** The customer details card (CustomerCardComponent).
 //      ** A list of the customer's orders (OrderListComponent).
 // * When the user clicks an order, the screen displays info for the selected order:
@@ -104,7 +106,7 @@ export interface IProduct {
 // - Card components: <Entity>CardComponent.
 // - Other types have neither "List" nor "Card" in their names: CustomerComponent, CustomerSearchComponent.
 
-// Here is the datatype (model) for the State (ICustomerState) which describes the entire screen's data:
+// Here is the datatype (model) for the State which describes the entire screen's data (ICustomerState):
 
 import { ICustomer, IOrder, IProduct } from 'src/models/customer.model';
 
@@ -141,10 +143,10 @@ export interface ICustomerState {
 // State:
 // * Centralizes data management providing a single source of truth for the module's data.
 // * Ensures that all parts of the module are synchronized with the same version of the data.
-// * Simplifies communication between components by avoiding direct data sharing and, worse, multiple "main" copies of the same data.
+// * Simplifies communication between components by avoiding direct data sharing and, worse, multiple local copies of the same data.
 // * Ensures that growing amounts of data are handled efficiently and predictably.
 
-// In NgRx, State is immutable, meaning it cannot be directly modified.
+// In NgRX, State is immutable, meaning it cannot be directly modified.
 // Eeach change creates a new instance of State and makes the old instance a subject to the garbage collector.
 // That prevents accidental modifications and ensures predictability and reliable debugging.
 
@@ -190,21 +192,18 @@ export const initialCustomerState: ICustomerState = {
 // The Store provides a way to access the states of different modules, dispatch Actions, and subscribe to state changes.
 // You can think of it as a database that you can get access in order to retrieve or update the data that the application operates on.
 
-// The Store is an observable, and components can subscribe to it to get updates when the state changes.
-
-// The Store is a state-management solution inspired by the famous library Redux.
-// Redux popularized the idea of organizing the application state into simple objects and updating this state by replacing it with a new state.
-// This means that the object shouldn't be mutated directly, but rather should be replaced with a new object which contains the new version of the data.
+// The Store is an Observable, and components can subscribe to it to get updates when the state changes.
+// Usually, componens select data from the Store using Observables, so if one component changes the State, others immediately see that change.
 
 // You don't declare the Store data type, and don't instantiate it - Angular does all that for you, creating a Store instance as injectible.
-// You only need to inject it into your components so they can read and update it.
+// You only need to inject it into your components' constructors.
 
 // Here is a sample component for the Customer List.
 // It's incomplete and created only to demonstrate how components work with the Store:
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
-import { Store } from '@ngrx/store';
+import { Store } from '@NgRX/store';
 import { ICustomer } from 'src/models/customer.model';
 
 @Component({
@@ -218,17 +217,19 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   contextCustomer$: Observable<ICustomer>;
   private _contextCustomer!: ICustomer;
 
+  private _s = new Subscription();
+  
   // A pointer to the application's Store is injected into the constructor:
   constructor(private _store: Store<any>) { }
 
   ngOnInit(): void {
-    // Populate the observables from the Store:
-    this.customerList$ = this._store.select('customerList');
+    // Create subscriptions:
+    this.customerList$ = this._store.select('customerList'); // notice that observables of the Store don't have $ in their names, so don't write select('customerList$')
     this.contextCustomer$ = this._store.select('contextCustomer');
     // The parameters passed to the select() functions are strings with the names of the current module's State properties, as defined in the model.  
-    // Even though the entire Store is queried, only data from the current module's State is subscribed to.  
-    // This means different modules (screens) can have fields with the same names in their States without interfering with each other.
-    // So, if another module has the contextCustomer field in its model, it will be ignored by select('contextCustomer') in CustomerListComponent.
+    // Even though the entire Store is queried, only data of the current module's State is subscribed to.  
+    // In other words, the Store can have observables with the same name for different modules without interfering with each other, and each modue "sees" only its own data.
+    // For example, if the Store has contextCustomer for another module, it will be ignored by select('contextCustomer') in CustomerListComponent.
 
     // Populate the regular vars from the observables (to work with the data in the imperative way, if needed):
     this._s.add(
@@ -241,17 +242,14 @@ export class CustomerListComponent implements OnInit, OnDestroy {
 }
 
 // Note that any components of the module can access any properties of the module's state - even those which store data for other components of the same module.
-// For example, if another component of the module needs to get the context customer, it will do the same call in its component class:
+// For example, if another component of our module needs to get the context customer, it will do the same call in its component class:
 this.contextCustomer$ = this._store.select('contextCustomer');
-// That eliminates the need to pass that customer from the parent component's template to the child components.
-
-// The this._store.select('contextCustomer') method makes this.contextCustomer$ subscribe to the changes of contextCustomer in the Store.
-// So, if any component changes contextCustomer of the module's State, all the subscribing components are immediately updated as well.
+// That eliminates the need to pass that customer from the parent component's template to the child components if they need the untouched, originally retrieved data.
 
 // @@@ What is an Angular application?
 
 // As mentioned, the Store is a singleton — there's only one Store instance per Angular application.  
-// You might ask: "What if I open several browser tabs for different customers? Shouldn't the properties of ICustomerState be arrays?"  
+// You might ask: "What if I open several browser tabs for different customers? Shouldn't the properties of ICustomerState be arrays, one State per tab?"  
 // Here's the clarification: Angular applications follow the SDI (Single Document Interface) model, not MDI (Multiple Document Interface).  
 // Only one screen is active at a time, but you can open multiple instances of the application.  
 // So, each browser tab runs its own separate instance of the Angular app with its own singleton Store.
@@ -262,20 +260,20 @@ this.contextCustomer$ = this._store.select('contextCustomer');
 
 // An Action is a plain TypeScript object used to express an event or an intention (usually a data manipulation or a change in the application's state).  
 // Actions are dispatched (i.e. launched) in one part of the application (usually in components or services) and captured in others.  
-// NgRx automatically manages the chain of fired events when an Action is dispatched, ensuring the appropriate consumers respond to it seamlessly.  
-// Actions provide an easy global communication channel. They are one of the main building blocks in NgRx.
+// NgRX automatically manages the chain of fired events when an Action is dispatched, ensuring the appropriate consumers respond to it seamlessly.  
+// Actions provide an easy global communication channel. They are one of the main building blocks in NgRX.
 
 // The Action file is a module-level file, like the other files which will be described soon - Service, Effect and Reducer.
 // Each file serves all the components of the module - CustomerCardComponent, OrderCardComponent and ProductCardComponent.
 
 // An Action object has two properties:  
 //   * type – a textual description of the intention.  
-//   * payload (optional) – additional data required for the action (like retrieval parameters), used to enforce type safety when the Action is dispatched.  
+//   * payload (optional) – additional data required for the action (like retrieval parameters); payload is used to enforce type safety when the Action is dispatched.  
 
 // An Action is created and returned by the createAction() factory function, which accepts type and payload.  
-// The next example defines a few simple Actions. No payload, so only type is passed to createAction().  
+// The next example defines a few simple Actions. No payload for now, only type is passed to createAction().  
 // It's a good practice to add the word "Action" to the names of Action objects:
-import { createAction } from '@ngrx/store';
+import { createAction } from '@NgRX/store';
 export const incrementAction = createAction('[Counter] Increment');
 export const decrementAction = createAction('[Counter] Decrement');
 export const resetAction = createAction('[Counter] Reset');
@@ -296,28 +294,28 @@ export const resetAction = createAction('[Counter] Reset');
 // Describes the payload (additional data) expected by the Action. That data must be provided when the Action is dispatched.
 // The argument prevents sending wrong data to the Action, i.e. inforces strong typing.
 
-// The payload is sent to createAction() as the 2nd parameter via the props<T>() function, for example:
-import { createAction, props } from '@ngrx/store';
+// The payload is sent to createAction() via the props<T>() function, for example:
+import { createAction, props } from '@NgRX/store';
 export const insTodoAction = createAction('[Todo List] Insert', props<{ todoText: string }>());
 
 // props<T>() takes a generic type parameter, which is the data type of the payload for compile-time type checking to ensure correct payload structure.
 // In the example above, the props() defines that the action should carry a payload with a property `todoText` of type `string`, so a correct dispatch looks like this:
-this._store.dispatch(insTodoAction({ todoText: 'Learn NgRx' }));
+this._store.dispatch(insTodoAction({ todoText: 'Learn NgRX' }));
 // The next calls will cause compilation-time errors:
-this._store.dispatch(insTodoAction({ todoText: 123 })); // doesn't match the required data type - 'todoText' must be a string
-this._store.dispatch(insTodoAction({ text: 'Learn NgRx' })); // doesn't match the required data type - 'text' is not defined in the props
+this._store.dispatch(insTodoAction({ todoText: 123 })); // 'todoText' must be a string
+this._store.dispatch(insTodoAction({ text: 'Learn NgRX' })); // 'text' is not defined in the props
 
 // Note that the dispatch() method belongs to the Store singleton - that illustrates the application-wide scope of Actions.
 // Usually, Action files of different modules are grouped together in a folder under the app's Store folder, like src/app/Store/actions/.
 
-// The next example describes the Action file which could exist for the Customer screen we used earlier.
-// Firstly, the file declares a private enum each constant of which will be used as the type of an Action.
+// The next example describes the Action file which could exist for our Customer screen.
+// Firstly, the file declares a private enum each constant of which will be used as an Action type.
 
 // Note that:
 //   * Each CRUD operation of each entity has its dedicated Action.
-//   * Each main CRUD Action has its own ...Success action. The Success action is dispatched if its main Action was executed successfully.
+//   * Each main CRUD Action is coupled with a ...Success action. The Success action is dispatched if its main Action has been executed successfully.
 
-import { createAction } from '@ngrx/store';
+import { createAction } from '@NgRX/store';
 import { ICustomer, IOrder, IProduct } from 'src/models/customer.model';
 
 const m = '[Customer]'; // m = Module
@@ -362,7 +360,7 @@ enum d { // the Actions' "d"escriptions
   DelProductSuccess = `${DelProduct} Success`,
 }
 
-// Then, the Action file declares the Action objects themselves.
+// Then, the Action file declares Action objects themselves.
 
 // In most enterprise applications, dispatching an Action calls a function of a Web Service, so our example reflects that.
 // The props parameter to the createAction() function describes the Action's payload:
@@ -406,7 +404,8 @@ export const delProductSuccessAction = createAction(d.DelProductSuccess, props<{
 
 // === END OF THE Action FILE ===
 
-// Here are sample lines in the CustomerCardComponent which dispatch some Actions (of course, they would be in different parts of the component class):
+// We've just seen how Actions are created (declared).
+// Now, let's see how they would be dispatched in the CustomerCardComponent (of course, they would be in different parts of the component class):
 this._store.dispatch(selCustomerListAction({ actionLastName: this._lastName }));
 this._store.dispatch(selCustomerAction({ actionCustomerId: highlightedCustomerId })); // highlightedCustomerId is a param of delCustomer() function called from the template
 this._store.dispatch(insCustomerAction({ actionCustomer: this._contextCustomer }));
@@ -414,19 +413,22 @@ this._store.dispatch(updCustomerAction({ actionCustomer: this._contextCustomer }
 this._store.dispatch(delCustomerAction({ actionCustomerId: this._contextCustomer.customerId }));
 
 // There are a few rules to writing good actions within your application:
-// * Upfront - write actions before developing features to understand and gain a shared knowledge of the feature being implemented.
 // * Divide - categorize actions based on the event source.
 // * Many - actions are inexpensive to write, so the more actions you write, the better you express flows in your application.
 // * Event-Driven - capture events not commands as you are separating the description of an event and the handling of that event.
+
+// Write actions upfront - before developing Components which will dispatch them.
+// Usually, when it's time to create Actions, you've already created respective web-services (described next) which manipulate the module's data,
+// so you must have a strong initial idea which Actions you need for working with the web-services.
 
 // ######################################################################################################
 // * Service
 // ######################################################################################################
 
 // The class for outsourcing logic and data that directly calls the web service.  
-// It's the "last station" of data flow within Angular before the data is sent to the middle tier on the Web.  
+// It's the "last station" of data flow within Angular before data is sent to the middle tier on the Web.  
 // The class name simply says "Service", but think of it as "web service."  
-// Strictly speaking, this class is not a part of the NgRx library, but it's commonly found in apps that interact with a web service, which is the standard architecture.
+// Strictly speaking, this class is not a part of the NgRX library, but it's commonly found in apps that interact with a web service, which is the standard architecture.
 
 // Typically, Services are injected into other areas of our app, so they must have the @Injectable decorator.
 // The next Service is injected into the Effect class (which will be described next):
@@ -455,11 +457,11 @@ export class CustomerService {
     return this._http.get<ICustomer>(`${this._customersUrl}/${customerId}`, customerId);
   }
 
-  insCustomer(customer: ICustomer): Observable<ICustomer> { // it also returns the inserted customer with the ID genereted by the DB
+  insCustomer(customer: ICustomer): Observable<ICustomer> { // returns the inserted customer with the ID, updatedBy & updatedAt genereted by the DB
     return this._http.post<ICustomer>(`${this._customersUrl}/ins`, customer)
   }
 
-  updCustomer(customer: ICustomer): Observable<ICustomer> { // it also returns the updated customer with the updatedBy & updatedAt genereted by the DB
+  updCustomer(customer: ICustomer): Observable<ICustomer> { // returns the updated customer with the updatedBy & updatedAt genereted by the DB
     return this._http.put<ICustomer>(`${this._customersUrl}/upd`, customer);
   }
 
@@ -491,10 +493,7 @@ export class CustomerService {
 // DELETE an entity     DELETE  /entities/del/{entityId}   /entities/{parentEntityId}/child_entities/del/{childEntityId}
 // -------------------------------------------------------------------------------------------------------------------------
 
-// The INSERT URL doesn't include the ID - obviously, that ID has not been generated by the database yet. Instead, an object of ICustomer type is sent:
-  insCustomer(customer: ICustomer): Observable<ICustomer> {
-    return this._http.post<ICustomer>(`${this._customersUrl}/ins`, customer)
-  }
+// The INSERT URL doesn't include the ID - obviously, that ID has not been generated by the DB yet. Instead, an object of ICustomer type is passed to insCustomer.
 // An object of ICustomer type is also sent to the UPDATE web service, and it contains the ID.
 // So, there is no need to add the ID to the URL for UPDATE. But we do that for the user to see consistent URLs across the app.
 
@@ -510,15 +509,15 @@ ng g s MyService
 // If your application needs to perform a side effect, you define an Effect class.  
 
 // Effects are built using RxJS Observables and are designed to listen for specific Actions and perform side effects without directly modifying the Store.  
-// The Effect class captures a dispatched main (i.e. non-"Success") Action and calls the corresponding method in the Web Service class.  
+// The Effect class captures a dispatched main (i.e. non-"Success") Action and calls the respective method in the Web Service class.  
 // After that call, the Effect is the "first station" within Angular to handle the data returned from the middle tier.  
-// Once a side effect is successfully completed, the Effect typically dispatches the respective "Success" Action to update the Store with the results returned by the Web Service.  
+// Once a side effect is successfully completed, the Effect typically dispatches the corresponding "Success" Action to update the Store with the external call results.  
 
-// We'll use the Customer screen to demonstrate how Effects handle side effects.
+// We'll use the Customer screen to demonstrate how an Effect class handles side effects.
 // The class name uses just "Effect" for brevity, but it stands for "Side Effect":
 
 import { Injectable } from '@angular/core';
-import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Actions, createEffect, ofType } from '@NgRX/effects';
 import { CustomerService } from '../services/customer.service';
 import { ICustomer, IOrder, IProduct } from 'src/models/customer.model';
 import {
@@ -550,23 +549,23 @@ export class CustomerEffect {
 
   // Customer:
 
-  // createEffect() is an NgRx function used to define and register effects.
+  // createEffect() is an NgRX function used to define and register effects.
   // It accepts a factory function that returns an Observable, defining the logic for handling side effects based on Actions,
-  //    and returns EffectConfig - an Observable managed by NgRx that triggers side effects and optionally dispatches Actions:
+  //    and returns EffectConfig - an Observable managed by NgRX that triggers side effects and optionally dispatches Actions:
   selCustomerList$ = createEffect(() =>
     this._actions$.pipe(
-      // ofType() is an NgRx operator that allows only Actions with specific types to pass through.
+      // ofType() is an NgRX operator that allows only Actions with specific types to pass through.
       // It filters the Observable stream to listen specifically for the Action it handles.
       // This means the subsequent operators in the pipe will only run when selCustomerListAction is dispatched.
       ofType(selCustomerListAction),
       // switchMap takes an observable, maps each emitted value to a new inner observable, and switches to the latest one, cancelling any previous subscriptions.
       // Think of it as “forget the past, focus on the present”:
       switchMap((action) => {
-        // Call the respective Web Service function passing to it the Action's payload as input:
+        // Call the Web Service function passing to it the Action's payload as input:
         return this._svc.selCustomerList(action.actionLastName).pipe(
           // If no errors, dispatch the respective Success Action passing to it the Web Service function's output:
           map((customerList: ICustomer[]) => selCustomerListSuccessAction({ actionCustomerList: customerList })),
-          catchError(() => EMPTY), // a real app would include an error handler, but let's leave that out for now.
+          catchError(() => EMPTY), // a real app would include an error handler, but let's leave that out for now
         );
       }),
     ),
@@ -639,14 +638,15 @@ export class CustomerEffect {
 
 // The mission of the Reducer is critical – it's responsible for updating the State with the results of the Web Service calls when a ...Success Action is dispatched by the Effect.
 
-// Also, you can create and dispatch Actions which update the State without calling side effects - like those without "Success" in the example below.
-// That is the correct way! We don't update the State in other spots of the application, even though technically it's possible.
-// Instead, these spots dispatch Actions which signal the Reducer to change the State.
-// Reducer is one centralized file with all State updates for the given module, that significantly simplifies debugging.
+// Also, you can create and dispatch Actions which update the State without calling side effects - like those without ...Success counterparts in the example below.
+// That is the correct way to update the State! We don't change it in other classes directly, even though technically it's possible.
+// Instead, other classes dispatch Actions which signal the Reducer to change the State.
+// So, Reducer is the only function which is allowed to directly update State for the given module.
+// Having such a centralized spot significantly simplifies debugging - if the State is updated in a wrong way, you immediately know where to drop a breakpoint.
 
 // Here is an example Reducer file for our Customer module:
 
-import { Action, createReducer, on } from '@ngrx/store';
+import { Action, createReducer, on } from '@NgRX/store';
 import * as _ from 'lodash';
 import { ICustomerState, initialCustomerState } from '../states/customer.state';
 import { ICustomer, IOrder, IProduct } from 'src/models/customer.model';
@@ -670,15 +670,40 @@ export function customerReducer(oldState: ICustomerState | undefined, action: Ac
   return getNewState(oldState, action);
 }
 
+// Now we will call createReducer() which creates a reducer function by combining an initial state with multiple on() handlers
+//    that specify how the state changes in response to dispatched actions.
+// It simplifies writing reducers by providing a clear, declarative way to map actions to state update functions in NgRX.
+// createReducer() is defined in NgRX this way:
+// createReducer<S, A extends Action = Action>(
+//   initialState: S,
+//   ...ons: On<S>[]
+// ): ActionReducer<S, A>
+// Parameters:
+//    initialState: S — starting state object
+//    ...ons: On<S>[] — array (vararg) of on() mappings (action type → reducer function)
+// Returns:
+//    ActionReducer<S, A> — final reducer function for the store.
+
 // If the Action is handled in the reducer function, the new State replaces the exisitng one, otherwise the exisitng State remains untouched:
 const getNewState = createReducer(
-  initialCustomerState, // notice that the initialCustomerState object is passed to the createReducer function
+  // Remember we create initialCustomerState in the Model file? Now it's time to utilize it.
+  // When the app starts, NgRX initializes the entire store tree by invoking every reducer once with a special internal action '@NgRX/store/init':
+  // reducer(undefined, { type: '@NgRX/store/init' })
+  // As you see, the old state is passed as undefined (indeed, there is no old state yet at bootstrap).
+  // So, we must provide a default state as the first parameter to createReducer (it also dictates the shape NgRX will use to type-check the old state on next calls):
+  initialCustomerState,
 
+  // The second parameter to createReducer is an array (vararg) of on() functions.
+  // on() is a function used to define how the state changes in response to specific Actions inside a Reducer.
+  // It links an Action (the 1st arg) to a callback function changing the State (the 2nd arg).
+  // In simple words, on() tells the Reducer: "when this Action is dispatched, run this specific State update function".
+  
   // Customer:
 
   on(setContextCustomerAction, (state: ICustomerState, { actionCustomer: newContextCustomer }) => ({
     ...state, // copy all the properties of the old State to the new State unchanged...
     contextCustomer: newContextCustomer // ...and override contextCustomer whith the new value
+    // Since HTML controls are subscribed to the State, this change will be immediately reflected in GUI.
   })),
 
   on(selCustomerListAction, (state: ICustomerState) => ({
@@ -750,21 +775,21 @@ const getNewState = createReducer(
 
 // As you've seen, Actions fall into three categories:
 
-// 1. Actions that are called from business logic and trigger external Effects (usually web services). They have corresponding Success Actions.
-// A typical example is Actions for CRUD operations.
-// Such Actions do not change the State with business data (except of turning on the progress bar display flag).
+// 1. Actions that are called from business logic and trigger external Effects (usually, web service calls). They have counterpart Success Actions.
+// A typical example - Actions for CRUD operations.
+// Such Actions do not change the State with business data (they only turn on the progress bar display flag).
 
 // 2. Success Actions. Called from the Effect class in case of successful execution of the main Action.
 // Their task is updating the State with the result, retuned by the Effect.
 // Some applications also use Failure Actions, called from the Effect class in case of an error in the main Action, if the State must be updated with the failure info.
 
 // 3. Actions that are called from business logic and DO NOT trigger external Effects.
-// Their task is to change the State by writing into it the data passed as payload by the calling business code.
-// For example, SetContextCustomer receives data as a whole ICustomer object that was already stored on the client side because it was received from the web service earlier.
-// Actions of this category are also used to "manually" change a specific field of the State which should not be stored outside right away.
+// They manipulate data which already exists on the front end and should not be saved immediately (or should not be saved at all, like internal mechanics variables).
+// For example, SetContextCustomer receives payload as an ICustomer object that was retrieved from the web service earlier, and only copied it to the State -
+//    if that data will be updated by the used, another Action will save it outside later.
 
 // Let me remind you once again that any physical changes to the State must be made only within the Reducer.
-// Despite the fact that any component has access to the State, changes must be made by dispatching Actions, and not by assigning values ​​to the State fields directly.
+// Components must dispatch Actions rather than assign values ​​to the State fields directly.
 
 // Let's briefly summarize the life cycle stages that an Action goes through:
 
@@ -773,10 +798,10 @@ const getNewState = createReducer(
 // 1. The component dispatches a regular (not Success) Action.
 // 2. The Reducer captures it and updates the State to display the progress bar.
 // 3. The Effect captures the Action and calls the corresponding function of the Service, passing the payload as an input.
-// 4. The Service sends an HTTP request to the web service and is waiting for its result.
+// 4. The Service sends an HTTP request to the web service and is waiting for the response.
 // 5. When an HTTP response is received, the Service function passes the received data to the Effect.
 // 6. If the call was successful, the Effect dispatches the respective Success Action, passing the data returned by the web service.
-// 7. The Reducer captures the Success Action, updates the State with those results, and turns off the progress bar flag.
+// 7. The Reducer captures the Success Action, updates the State with the data received the Service, and turns off the progress bar flag.
 
 // Actions unrelated to Effects (category 3):
 
