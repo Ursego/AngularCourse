@@ -15,7 +15,7 @@
 
 // 1. Template-Driven Forms:
 
-// Uses Angular’s two-way data binding (ngModel) and works mainly within the template (HTML).
+// Uses Angular’s two-way data binding - ngModel - and works mainly within the template (HTML).
 // Best for simpler forms, where most of the logic is embedded in the template.
 // Example:
 
@@ -37,14 +37,14 @@
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 export class MyFormComponent {
-  form = new FormGroup({
+  fg = new FormGroup({
     username: new FormControl('', Validators.required)
   });
 }
 
 // Template:
 
-<form [formGroup]="form">
+<form [fg]="form">
   <input formControlName="username">
   <button [disabled]="form.invalid">Submit</button>
 </form>
@@ -76,7 +76,7 @@ export class MyFormComponent {
 
 // A form control is considered "valid" when it meets (passes) all the validation rules applied to it.
 // Becomes "invalid" if any validator fails.
-// A form group is "valid" only if all its child controls are "valid".
+// A form group is "valid" only when all its child controls are "valid".
 
 // ######################################################################################################
 // ValidationErrors
@@ -84,7 +84,7 @@ export class MyFormComponent {
 
 // ValidationErrors is a key concept for handling and representing form validation errors.
 // Represents validation errors returned from failed validation checks in form controls.
-// It's essentially a simple object where each key represents a specific type of error, and its value is
+// It's essentially a simple Map-like object where each key represents a specific type of error, and its value is
 //      either true or an object with additional error details.
 
 type ValidationErrors = {
@@ -112,22 +112,20 @@ type ValidationErrors = {
 
 // Usage in component:
 ngOnInit() {
-    this.form = new FormGroup({
-      name: new FormControl('', [Validators.required, Validators.minLength(3)])
-    });
-  }
-  
-  get nameErrors(): ValidationErrors | null {
-    return this.form.get('name')?.errors;
-  }
+  this.form = new FormGroup({
+    name: new FormControl('', [Validators.required, Validators.minLength(3)])
+  });
+}
+
+get nameErrors(): ValidationErrors | null {
+  return this.form.get('name')?.errors;
+}
 
 // Usage in template:
 <input formControlName="name">
 <div *ngIf="nameErrors">
   <p *ngIf="nameErrors['required']">Name is required.</p>
-  <p *ngIf="nameErrors['minlength']">
-    Name must be at least {{nameErrors['minlength'].requiredLength}} characters.
-  </p>
+  <p *ngIf="nameErrors['minlength']">Name must be at least {{nameErrors['minlength'].requiredLength}} characters.</p>
 </div>
 
 // ######################################################################################################
@@ -137,13 +135,13 @@ ngOnInit() {
 // ValidatorFn is a function that receives a control and synchronously returns a map of validation errors if present, otherwise null.
 
 interface ValidatorFn {
-    (control: AbstractControl<any, any>): ValidationErrors | null
+  (control: AbstractControl<any, any>): ValidationErrors | null
 }
 
 // AsyncValidatorFn is a function that receives a control and returns a Promise or observable that emits validation errors if present, otherwise null.
 
 interface AsyncValidatorFn {
-    (control: AbstractControl<any, any>): Promise<ValidationErrors | null> | Observable<ValidationErrors | null>
+  (control: AbstractControl<any, any>): Promise<ValidationErrors | null> | Observable<ValidationErrors | null>
 }
 
 // ######################################################################################################
@@ -195,12 +193,13 @@ const username = new FormControl('', [
 // These validators are applied to the form control, and the form becomes invalid if any of the conditions are not met.
 // Each validator returns an error object if validation fails or null if it succeeds.
 
-// If validations are optional, then firstly create an array of validators according to your needs, and then pass it to the FormControl's constructor:
+// If validations are optional, i.e. applied or not applied depending on runtime conditions, then firstly create an array of validators according to your needs:
 const usernameValidators = (this.loginThroughGoogleOrSocialMedia()) ? [] : [
   Validators.required,
   Validators.minLength(6),
   Validators.maxLength(20)
 ];
+// Then, pass that array to the FormControl's constructor:
 const username = new FormControl('', usernameValidators);
 
 // Validators example:
@@ -290,7 +289,7 @@ constructor(validators: ValidatorFn | ValidatorFn[], asyncValidators: AsyncValid
 
 // https://v17.angular.io/api/forms/FormControl
 
-// FormControl is a fundamental class in Angular's Reactive Forms module that represents a single form field.
+// FormControl is a fundamental class in Angular's Reactive Forms module that represents a single field.
 // It manages the value, validation, and state (such as touched, dirty, valid, etc.) of the form control.
 // FormControl is typically used to create and manage form inputs programmatically,
 //         either as standalone controls or as part of a form group or form array.
@@ -302,8 +301,7 @@ constructor(validators: ValidatorFn | ValidatorFn[], asyncValidators: AsyncValid
 // dirty: Whether the control’s value has been changed by the user.
 // errors: Any validation errors present in the control.
 
-// Type Parameter in FormControl:
-// In Angular v14+, FormControl can accept a type parameter that specifies the type of data it holds (FormControl<T>), enhancing type safety.
+// Note that FormControl accepts a type parameter that specifies the type of data it holds (FormControl<T>), enhancing type safety.
 
 import { Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
@@ -317,7 +315,7 @@ export class ExampleFormComponent {
   ageControl = new FormControl<number | null>(null, [Validators.required, Validators.min(18)]);
   birthDateControl = new FormControl<Date | null>(null, Validators.required);
   genderControl = new FormControl<string>('');
-  acceptTermsControl = new FormControl<boolean>(false, Validators.requiredTrue);
+  acceptTermsControl = new FormControl<boolean>(false, Validators.requiredTrue); // not just a required but must be True
 
   allControllsAreValid(): boolean {
     return this.nameControl.valid && this.ageControl.valid && this.birthDateControl.valid && this.genderControl.valid && this.acceptTermsControl.valid;
@@ -339,23 +337,23 @@ export class ExampleFormComponent {
 // HTML Template:
 
 <form (ngSubmit)="onSubmit()">
-  <!-- Input Field (Text) -->
+  <!-- Text Input -->
   <label>Name:</label>
-  <input type="text" [formControl]="nameControl">
+  <input type="text" formControlName="nameControl">
   <div *ngIf="nameControl.invalid && nameControl.touched">
     Name is required and must be at least 3 characters.
   </div>
 
   <!-- Number Input -->
   <label>Age:</label>
-  <input type="number" [formControl]="ageControl">
+  <input type="number" formControlName="ageControl">
   <div *ngIf="ageControl.invalid && ageControl.touched">
     You must be at least 18 years old.
   </div>
 
   <!-- Date Input -->
   <label>Birth Date:</label>
-  <input type="date" [formControl]="birthDateControl">
+  <input type="date" formControlName="birthDateControl">
   <div *ngIf="birthDateControl.invalid && birthDateControl.touched">
     Please select a valid birth date.
   </div>
@@ -363,10 +361,10 @@ export class ExampleFormComponent {
   <!-- Radio Buttons -->
   <label>Gender:</label>
   <label>
-    <input type="radio" [formControl]="genderControl" value="male"> Male
+    <input type="radio" formControlName="genderControl" value="male"> Male
   </label>
   <label>
-    <input type="radio" [formControl]="genderControl" value="female"> Female
+    <input type="radio" formControlName="genderControl" value="female"> Female
   </label>
   <div *ngIf="genderControl.invalid && genderControl.touched">
     Please select your gender.
@@ -374,7 +372,7 @@ export class ExampleFormComponent {
 
   <!-- Checkbox -->
   <label>
-    <input type="checkbox" [formControl]="acceptTermsControl"> I accept the terms and conditions
+    <input type="checkbox" formControlName="acceptTermsControl"> I accept the terms and conditions
   </label>
   <div *ngIf="acceptTermsControl.invalid && acceptTermsControl.touched">
     You must accept the terms.
@@ -391,7 +389,7 @@ export class ExampleFormComponent {
 // https://v17.angular.io/api/forms/FormGroup
 
 // FormGroup is a class in Angular's Reactive Forms module that groups multiple FormControl-s into a single unit.
-// It is used to represent a collection of form controls that logically belong together, such as the fields of a form.
+// It's used to represent a collection of form controls that logically belong together, such as the fields of a form.
 // By grouping controls, Angular allows you to manage the validation, status, and values of multiple form controls at once.
 
 // Key Features of FormGroup:
@@ -400,16 +398,14 @@ export class ExampleFormComponent {
 // * Tracks the form state:
 //         It tracks the state (valid, invalid, dirty, touched, etc.) of all its child controls.
 // * Manages the form’s value:
-//         A FormGroup allows you to get or set the entire form’s value as an object,
+//         A FormGroup allows you to get or set the entire form’s value as a Map object,
 //            where the keys are the control names and the values are the form control values.
 // * Validation:
 //         You can add synchronous or asynchronous validators to a FormGroup to manage the validation of the entire group of controls.
 
-// Its constructor accepts an object containing key-value pairs where the keys are control names (strings)
-//      and the values are instances of FormControl, FormGroup, or FormArray.
+// Its constructor accepts a Map where the keys are control names (strings) and the values are instances of FormControl, FormGroup, or FormArray.
 
 // Let’s say you have a form with fields for a user's name, age, and email.
-
 // Define a FormGroup in the Component:
 
 import { Component } from '@angular/core';
@@ -429,13 +425,13 @@ export class UserFormComponent {
 
   // Handle form submission
   onSubmit() {
-    if (this.userForm.valid) { // no need to check each control individually
+    if (this.userForm.valid) { // no need to check each control individually as we did earlier in the FormControl example
       console.log(this.userForm.value);
     }
   }
 }
 
-// The Template for the Form:
+// The Template fragment for the Form:
 
 <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
   <div>
@@ -470,20 +466,20 @@ console.log(this.userForm.value); // output: { name: '', age: null, email: '' }
 
 // You can set the values of the entire group programmatically:
 this.userForm.setValue({
-    name: 'John Doe',
-    age: 25,
-    email: 'john.doe@example.com'
-  });
+  name: 'John Doe',
+  age: 25,
+  email: 'john.doe@example.com'
+});
 
-// If you only want to set some values and leave others unchanged, use patchValue:
+// If you only want to set some values and leave others unchanged, use patchValue instead of setValue:
 this.userForm.patchValue({
-    name: 'Jane Doe'
-  });
+  name: 'Jane Doe'
+});
 
 // You can check if the form is valid, invalid, touched, dirty, etc.:
 if (this.userForm.valid) {
-    console.log('Form is valid');
-  }
+  console.log('Form is valid');
+}
 
 // You can reset the form, which clears all values and sets the controls back to their initial states:
 this.userForm.reset();
@@ -494,15 +490,15 @@ this.userForm.reset();
 // Let’s say you want to create a form with user information and address fields:
 
 userForm = new FormGroup({
-    personalInfo: new FormGroup({
-      name: new FormControl(''),
-      age: new FormControl('')
-    }),
-    address: new FormGroup({
-      street: new FormControl(''),
-      city: new FormControl('')
-    })
-  });
+  personalInfo: new FormGroup({
+    name: new FormControl(''),
+    age: new FormControl('')
+  }),
+  address: new FormGroup({
+    street: new FormControl(''),
+    city: new FormControl('')
+  })
+});
 
 // In the template:
 
@@ -526,6 +522,9 @@ userForm = new FormGroup({
   <button type="submit">Submit</button>
 </form>
 
+// Notice [formGroup]=... when a new group is CREATED and formGroupName=... when an existing group is MENTIONED
+// (the nested groups were created when [formGroup] created their parent group).
+
 // @@@ Validation in FormGroup
 
 // You can apply validation to the entire group instead of individual controls.
@@ -548,19 +547,18 @@ userForm = new FormGroup({
 // ######################################################################################################
 
 // FormArray is a class in Angular’s Reactive Forms module that allows you to manage an array of form controls.
-// It is used when you need to handle dynamic forms, where the number of form controls is not fixed and can change based on user interaction
-//         (e.g., adding or removing items in a list).
 
 // Unlike FormGroup, which organizes form controls by key-value pairs, FormArray organizes form controls as an array.
 // This means each control in the FormArray has an index and can be accessed via its position in the array.
+// It's used when you need to handle dynamic forms, where the number of form controls is not fixed and can change based on user interaction
+//         (like adding or removing items in a list).
 
-// Key Features of FormArray:
+// Key features of FormArray:
 // * Dynamic Form Control Management: It allows adding, removing, or updating form controls dynamically,
-//         which is useful for use cases like adding multiple email addresses, phone numbers, or dynamically generating form fields.
-// * Manages Form Controls: A FormArray can hold instances of FormControl, FormGroup, or even other FormArray.
+//   For example: if user unselects "Billing address same as shipping address", we generate the Billing address form on the fly by adding it to the FormArray.
+// * Manages Form Controls: A FormArray can hold instances of FormControl, FormGroup, or even another FormArray -
+//   its constructor accepts an array of FormControl, FormGroup, or FormArray instances.
 // * Tracks Form State: Similar to FormGroup, it tracks the state of all the controls it contains (such as valid, invalid, touched, dirty, etc.).
-
-// Its constructor accepts an array of FormControl, FormGroup, or FormArray instances.
 
 // FormArray elements are manipulated using the next methods:
 push() // adds a control to FormArray
@@ -569,37 +567,34 @@ removeAt(index) // deleted a control from FormArray
 
 // Let’s say you want a form where a user can add a list of email addresses.
 // Define a FormArray in the Component:
-
 import { Component } from '@angular/core';
-import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-email-form',
   templateUrl: './email-form.component.html'
 })
 export class EmailFormComponent {
+  private readonly _emailValidators: ValidatorFn[] = [Validators.required, Validators.email];
+
   emailForm = new FormGroup({
     emails: new FormArray([
-      new FormControl('', [Validators.required, Validators.email])  // initial control
+      new FormControl('', this._emailValidators)
     ])
   });
 
-  // Getter to retrieve the emails FormArray
   get emails(): FormArray {
     return this.emailForm.get('emails') as FormArray;
   }
 
-  // Method to add a new email field
   addEmail() {
-    this.emails.push(new FormControl('', [Validators.required, Validators.email]));
+    this.emails.push(new FormControl('', this._emailValidators));
   }
 
-  // Method to remove an email field
   removeEmail(index: number) {
     this.emails.removeAt(index);
   }
 
-  // Handle form submission
   onSubmit() {
     if (this.emailForm.valid) {
       console.log(this.emailForm.value);
@@ -635,46 +630,44 @@ const emailControl = this.emails.at(0); // access the first email control
 // Define a FormArray of FormGroup in the Component:
 
 @Component({
-    selector: 'app-phone-form',
-    templateUrl: './phone-form.component.html'
-  })
-  export class PhoneFormComponent {
-    phoneForm = new FormGroup({
-      phones: new FormArray([
-        new FormGroup({
-          type: new FormControl('Home'),
-          number: new FormControl('', [Validators.required, Validators.minLength(10)])
-        })
-      ])
-    });
-  
-    // Getter to retrieve the phones FormArray
-    get phones(): FormArray {
-      return this.phoneForm.get('phones') as FormArray;
-    }
-  
-    // Method to add a new phone field
-    addPhone() {
-      this.phones.push(
-        new FormGroup({
-          type: new FormControl('Work'),
-          number: new FormControl('', [Validators.required, Validators.minLength(10)])
-        })
-      );
-    }
-  
-    // Method to remove a phone field
-    removePhone(index: number) {
-      this.phones.removeAt(index);
-    }
-  
-    // Handle form submission
-    onSubmit() {
-      if (this.phoneForm.valid) {
-        console.log(this.phoneForm.value);
-      }
+  selector: 'app-phone-form',
+  templateUrl: './phone-form.component.html'
+})
+export class PhoneFormComponent {
+  private readonly _phoneValidators: ValidatorFn[] = [Validators.required, Validators.minLength(10)];
+
+  phoneForm = new FormGroup({
+    phones: new FormArray([
+      new FormGroup({
+        type: new FormControl('Home'),
+        number: new FormControl('', this._phoneValidators)
+      })
+    ])
+  });
+
+  get phones(): FormArray {
+    return this.phoneForm.get('phones') as FormArray;
+  }
+
+  addPhone() {
+    this.phones.push(
+      new FormGroup({
+        type: new FormControl('Work'),
+        number: new FormControl('', this._phoneValidators)
+      })
+    );
+  }
+
+  removePhone(index: number) {
+    this.phones.removeAt(index);
+  }
+
+  onSubmit() {
+    if (this.phoneForm.valid) {
+      console.log(this.phoneForm.value);
     }
   }
+}
 
 // Template for the Phone Form:
 
@@ -726,10 +719,9 @@ const phoneForm = new FormGroup({
 // FormBuilder
 // ######################################################################################################
 
-// Provides helper methods like group(), control(), and array() that make it easier to define forms and their structure in a declarative way.
 // FormBuilder is a service in Angular's Reactive Forms module that provides a more convenient and concise way to create form controls,
 //       form groups, and form arrays compared to manually instantiating them using new FormControl(), new FormGroup(), or new FormArray().
-// It is part of Angular's Reactive Forms API and simplifies the process of building forms with reduced boilerplate code.
+// It provides helper methods like group(), control(), and array() that make it easier to define forms in a declarative way and reduced boilerplate code.
 
 // Main methods:
 
@@ -756,7 +748,7 @@ import { FormBuilder, Validators } from '@angular/forms';
   template: '...'
 })
 export class UserFormComponent {
-  constructor(private _fb: FormBuilder) { } // <<<<<<< FormBuilder is typically injected into a component's constructor
+  constructor(private _fb: FormBuilder) { } // <<<<<<<<<<<<<< FormBuilder is typically injected into a component's constructor
 
   userForm = this._fb.group({ // <<<<<<< creating FormGroup
     name: ['', [Validators.required, Validators.minLength(3)]],
@@ -766,14 +758,14 @@ export class UserFormComponent {
       city: ['', Validators.required],
       zipCode: ['', [Validators.required, Validators.pattern(/^\d{5}$/)]]
     }),
-    phones: this._fb.array([ // <<<<<<< creating FormArray
+    phones: this._fb.array([ // <<<<<<<<<<<<<< creating FormArray
       this._fb.control('', Validators.required)
     ])
   });
 
   addPhone() {
     const phones = this.userForm.get('phones') as FormArray;
-    phones.push(this._fb.control('', Validators.required)); // <<<<<<< creating FormControl
+    phones.push(this._fb.control('', Validators.required)); // <<<<<<<<<<<<<< creating FormControl
   }
 }
 
@@ -815,17 +807,14 @@ export class FormSampleComponent implements OnInit {
     });
   }
 
-  // Helper method to retrieve FormArray controls
   get hobbies(): FormArray {
     return this.myForm.get('hobbies') as FormArray;
   }
 
-  // Add a hobby to the FormArray
   addHobby(): void {
     this.hobbies.push(new FormControl(''));
   }
 
-  // Handle form submission
   onSubmit(): void {
     console.log(this.myForm.value);
   }
@@ -885,7 +874,7 @@ untypedControl.setValue(123); // no error
 
 // Why Use Untyped Versions?
 // The untyped versions are designed to maintain backward compatibility with older codebases where types were not explicitly enforced.
-// They can be useful when migrating legacy code that did not previously use types).
+// They can be useful when migrating legacy code that did not previously use types.
 
 // ######################################################################################################
 // FormsModule & ReactiveFormsModule
@@ -920,7 +909,6 @@ import { FormsModule } from '@angular/forms';
 })
 export class AppModule {}
 
-
 // Template-Driven Form:
 
 <form #form="ngForm">
@@ -945,7 +933,7 @@ export class AppModule {}
 
 // Key Characteristics of ReactiveFormsModule:
 // * Form Control in Component:
-//      Form-related objectss (e.g., FormControl, FormGroup, FormArray) are defined and managed in the component class rather than the template.
+//      Form-related objects (e.g., FormControl, FormGroup, FormArray) are defined and managed in the component class rather than the template.
 // * Reactive and Explicit:
 //      Form handling is reactive, meaning changes to form values or state can trigger logic in the component using observables and subscriptions.
 // * Complex Validation:
@@ -954,8 +942,6 @@ export class AppModule {}
 //      Encourages a more structured and testable approach, especially useful for forms with complex logic or dynamic form controls.
 
 // Example Usage:
-
-// Import ReactiveFormsModule in AppModule:
 
 import { ReactiveFormsModule } from '@angular/forms';
 
